@@ -40,7 +40,6 @@ function NeebelCore:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("NeebelCDM_DB", self.defaults, true)
     self.mainFrame = CreateFrame("Frame", addonName, UIParent)
 
-
     self.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
     self.options.args.profiles.order = 999
     
@@ -61,30 +60,6 @@ function NeebelCore:OnInitialize()
     self:RegisterEvent("UNIT_AURA", "UpdateAuras")
     self:RegisterEvent("ACTIVE_PLAYER_SPECIALIZATION_CHANGED", "SpecChanged")
 
-    local counter = 0
-    for k, v in pairs(env.spellLookup) do
-        if(k == 185313 or k == 121471) then
-            local guid = GenerateGUID()
-            local item = TrackedObject.CreateTrackedSpell(guid, k, UIParent, nil)
-            item:SetPoint("CENTER", env.baseSize * (1 + counter), 0)
-            self.trackedObjects[guid] = item
-            counter = counter + 1
-        end
-    end
-
-    self.db.profile.trackedObjects = self.db.profile.trackedObjects or {}
-    local shadowBlades = CreateTrackedSpell(121471)
-    local shadowDance = CreateTrackedSpell(185313)
-
-    if shadowBlades then
-        self.db.profile.trackedObjects[shadowBlades.guid] = shadowBlades
-    end
-
-    if shadowDance then
-        self.db.profile.trackedObjects[shadowDance.guid] = shadowDance
-    end
-
-    BuildModelGraph(self.db.profile.trackedObjects, self.db.profile.groups)
     Timer:ScheduleRepeatingTimer(OnUpdate, 0.2)
 end
 
@@ -127,11 +102,7 @@ function NeebelCore:SpecChanged()
 end
 
 function OnUpdate()
-    for k, v in pairs(NeebelCore.trackedObjects) do
-        v:Update(DirtyState)
-    end
-    
-    DirtyState = {spellID = {}, auraID = {}}
+
 end
 
 

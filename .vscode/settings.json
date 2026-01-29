@@ -64,6 +64,7 @@
         "MouseIsOver",
         "HUD_EDIT_MODE_RESET_POSITION",
         "Object",
-        "CreateFramePoolCollection"
+        "CreateFramePoolCollection",
+        "class"
     ]
 }

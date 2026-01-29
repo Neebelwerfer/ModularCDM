@@ -26,12 +26,14 @@ Libs\LibSharedMedia-3.0\lib.xml
 Libs\LibEQOL\LibEQOL.xml
 
 Utils.lua
-Enums.lua
-Core.lua
-TrackedDataFactory.lua
+Types.lua
+Conditions.lua
+Node.lua
+Bindings.lua
+NodeFactory.lua
+FrameFactory.lua
 Options.lua
 CooldownSpell.lua
 Bars.lua
 TrackedObject.lua
-ModelBuilder.lua
-FrameBuilder.lua
+Core.lua
