@@ -28,17 +28,20 @@ FrameFactory = {}
 
 ---@generic T
 ---@class StaticPropDescriptor<T>
+---@field allowedResolveTypes ["static"]
 ---@field resolveType "static"
 ---@field valueType string
 ---@field value T
 
 ---@class BoundPropDescriptor
+---@field allowedResolveTypes ["binding"]
 ---@field resolveType "binding"
 ---@field valueType string
 ---@field value BindingValueDescriptor
 
 ---@generic T
 ---@class FlexiblePropDescriptor<T>
+---@field allowedResolveTypes ["static", "binding"]
 ---@field resolveType "static" | "binding"
 ---@field valueType string
 ---@field value T | BindingValueDescriptor
@@ -62,24 +65,30 @@ FrameTypes = {
 }
 
 -- Helpers for creating props
+---@return FlexiblePropDescriptor
 local function FlexibleProp(valueType, defaultValue)
     return {
+        allowedResolveTypes = {"static", "binding"},
         resolveType = "static",
         valueType = valueType,
         value = defaultValue
     }
 end
 
+---@return BoundPropDescriptor
 local function BoundProp(valueType, defaultValue)
     return {
+        allowedResolveTypes = {"binding"},
         resolveType = "binding",
         valueType = valueType,
         value = defaultValue
     }
 end
 
+---@return StaticPropDescriptor
 local function StaticProp(valueType, defaultValue)
     return {
+        allowedResolveTypes = {"static"},
         resolveType = "static",
         valueType = valueType,
         value = defaultValue

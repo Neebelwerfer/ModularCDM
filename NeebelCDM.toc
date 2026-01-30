@@ -28,9 +28,10 @@ Libs\LibEQOL\LibEQOL.xml
 Utils.lua
 Types.lua
 Conditions.lua
-Node.lua
+Nodes/NodeUtility.lua
+Nodes/Node.lua
+Nodes/NodeFactory.lua
 Bindings.lua
-NodeFactory.lua
 FrameFactory.lua
 Options.lua
 CooldownSpell.lua

@@ -1,0 +1,179 @@
+NodeFactory = {}
+
+-- Enum for template types
+---@enum NodeFactory.TemplateTypes
+NodeFactory.TemplateTypes = {
+    Icon = 1,
+    Bar = 2,
+    Text = 3,
+    IconButton = 4,
+    TextButton = 5,
+    Empty = 254, -- Used for relative positioning
+    DynamicGroup = 255 -- Used for dynamic positioning of children
+}
+
+---Create an Icon template (icon + cooldown + text)
+---@return Node
+function NodeFactory.CreateIcon()
+    return Node:New({
+        name = "Icon",
+        frames = {
+            FrameFactory.CreateIconFrame(),
+            FrameFactory.CreateCooldownFrame(),
+            FrameFactory.CreateTextFrame()
+        },
+        layout = {
+            size = { width = 36, height = 36 },
+            padding = { left = 0, right = 0, top = 0, bottom = 0 },
+            dynamic = {
+                enabled = false,
+                direction = GroupGrowDirection.Right,
+                spacing = 4,
+                collapse = true
+            }
+        }
+    })
+end
+
+---Create a Bar template
+---@return Node
+function NodeFactory.CreateBar()
+    return Node:New({
+        name = "Bar",
+        frames = {
+            FrameFactory.CreateBarFrame()
+        },
+        layout = {
+            size = { width = 200, height = 20 },
+            padding = { left = 0, right = 0, top = 0, bottom = 0 },
+            dynamic = {
+                enabled = false,
+                direction = GroupGrowDirection.Right,
+                spacing = 4,
+                collapse = true
+            }
+        }
+    })
+end
+
+---Create a Text template
+---@return Node
+function NodeFactory.CreateText()
+    return Node:New({
+        name = "Text",
+        frames = {
+            FrameFactory.CreateTextFrame()
+        },
+        layout = {
+            size = { width = 100, height = 20 },
+            padding = { left = 0, right = 0, top = 0, bottom = 0 },
+            dynamic = {
+                enabled = false,
+                direction = GroupGrowDirection.Right,
+                spacing = 4,
+                collapse = true
+            }
+        }
+    })
+end
+
+---Create an Empty container
+---@return Node
+function NodeFactory.CreateEmpty()
+    return Node:New({
+        name = "Empty",
+        frames = {},
+        layout = {
+            size = { width = 100, height = 100 },
+            padding = { left = 0, right = 0, top = 0, bottom = 0 },
+            dynamic = {
+                enabled = false,
+                direction = GroupGrowDirection.Right,
+                spacing = 4,
+                collapse = true
+            }
+        }
+    })
+end
+
+---Create a Dynamic Group (auto-layout container)
+---@return Node
+function NodeFactory.CreateDynamicGroup()
+    return Node:New({
+        name = "Dynamic Group",
+        frames = {},
+        layout = {
+            size = { width = 0, height = 0 },
+            padding = { left = 0, right = 0, top = 0, bottom = 0 },
+            dynamic = {
+                enabled = true,
+                direction = GroupGrowDirection.Right,
+                spacing = 4,
+                collapse = true
+            }
+        }
+    })
+end
+
+---Create an Icon Button template
+---@return Node
+function NodeFactory.CreateIconButton()
+    return Node:New({
+        name = "Icon Button",
+        frames = {
+            FrameFactory.CreateIconFrame()
+            -- Would need IconButton frame type with action support
+        },
+        layout = {
+            size = { width = 36, height = 36 },
+            padding = { left = 0, right = 0, top = 0, bottom = 0 },
+            dynamic = {
+                enabled = false,
+                direction = GroupGrowDirection.Right,
+                spacing = 4,
+                collapse = true
+            }
+        }
+    })
+end
+
+---Create a Text Button template
+---@return Node
+function NodeFactory.CreateTextButton()
+    return Node:New({
+        name = "Text Button",
+        frames = {
+            FrameFactory.CreateTextFrame()
+            -- Would need TextButton frame type with action support
+        },
+        layout = {
+            size = { width = 100, height = 30 },
+            padding = { left = 5, right = 5, top = 5, bottom = 5 },
+            dynamic = {
+                enabled = false,
+                direction = GroupGrowDirection.Right,
+                spacing = 4,
+                collapse = true
+            }
+        }
+    })
+end
+
+local Creator = {
+    [NodeFactory.TemplateTypes.Icon] = NodeFactory.CreateIcon,
+    [NodeFactory.TemplateTypes.Bar] = NodeFactory.CreateBar,
+    [NodeFactory.TemplateTypes.Text] = NodeFactory.CreateText,
+    [NodeFactory.TemplateTypes.IconButton] = NodeFactory.CreateIconButton,
+    [NodeFactory.TemplateTypes.TextButton] = NodeFactory.CreateTextButton,
+    [NodeFactory.TemplateTypes.Empty] = NodeFactory.CreateEmpty,
+    [NodeFactory.TemplateTypes.DynamicGroup] = NodeFactory.CreateDynamicGroup
+}
+
+---@param templateType NodeFactory.TemplateTypes
+---@return Node?
+function NodeFactory.Create(templateType)
+    if not Creator[templateType] then
+        return nil
+    end
+    return Creator[templateType]()
+end
