@@ -61,7 +61,6 @@ function RuntimeNode:FindBinding(alias)
             return binding
         end
     end
-    
     return nil
 end
 
@@ -75,23 +74,46 @@ end
 
 function RuntimeNode:ResolvePropsForFrame(frameDescription)
     local resolvedProps = {}
-
     for propName, prop in pairs(frameDescription.props) do
-        if prop.resolveType == "static" then
-            resolvedProps[propName] = prop.value
-        elseif prop.resolveType == "binding" then
-            if prop.value then
-                local binding = self:FindBinding(prop.value.binding)
-                if binding then
-                    local field = prop.value.field
-                    local value = DataContext.ResolveBinding(binding.type, binding.key, field)
-                    if value then
-                        resolvedProps[propName] = value
-                    end
-                end
+        resolvedProps[propName] = self:ResolveProp(prop)
+    end
+    return resolvedProps
+end
+
+---Recursively resolve a prop (handles nested structures)
+function RuntimeNode:ResolveProp(prop)
+    -- Handle arrays (like cooldowns)
+    if type(prop) == "table" and #prop > 0 then
+        local resolved = {}
+        for i, item in ipairs(prop) do
+            resolved[i] = self:ResolveProp(item)
+        end
+        return resolved
+    end
+    
+    -- Handle prop descriptors
+    if prop.resolveType == "static" then
+        return prop.value
+    elseif prop.resolveType == "binding" then
+        if prop.value then
+            local binding = self:FindBinding(prop.value.binding)
+            if binding then
+                local field = prop.value.field
+                local value = DataContext.ResolveBinding(binding.type, binding.key, field)
+                return value
             end
         end
+        return nil
     end
-
-    return resolvedProps
+    
+    -- Handle nested objects (like CooldownDescriptor)
+    if type(prop) == "table" and prop.resolveType == nil then
+        local resolved = {}
+        for key, val in pairs(prop) do
+            resolved[key] = self:ResolveProp(val)
+        end
+        return resolved
+    end
+    
+    return prop
 end

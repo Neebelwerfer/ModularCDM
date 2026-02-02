@@ -1,4 +1,4 @@
-NeebelCore = LibStub("AceAddon-3.0"):NewAddon("NeebelCDM", "AceConsole-3.0", "AceEvent-3.0")
+NeebelCore = LibStub("AceAddon-3.0"):NewAddon("NeebelCDM", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
 local addonName, env = ...
 local AC = LibStub("AceConfig-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
@@ -74,26 +74,29 @@ function NeebelCore:OnInitialize()
     textDescriptor.transform.offsetY = -13
     textDescriptor.props.fontSize.value = 15
 
-    local chargeCooldown = FrameDescriptionFactory.CreateCooldownFrame()
-    chargeCooldown.props.cooldown.resolveType = "binding"
-    chargeCooldown.props.cooldown.value = {binding = "Test Spell", field = "charges.cooldown"}
-    chargeCooldown.props.swipe.value = false
-    chargeCooldown.props.edge.value = true
-    chargeCooldown.props.reverse.value = true
-    chargeCooldown.props.hideCountdown.value = true
+    local chargeCooldown = PropertyFactory.DefaultCooldownProperties()
+    chargeCooldown.cooldown.resolveType = "binding"
+    chargeCooldown.cooldown.value = {binding = "Test Spell", field = "charges.cooldown"}
+    chargeCooldown.swipe.value = false
+    chargeCooldown.edge.value = true
+    chargeCooldown.reverse.value = true
+    chargeCooldown.hideCountdown.value = true
 
-    local cooldownDescriptor = FrameDescriptionFactory.CreateCooldownFrame()
-    cooldownDescriptor.props.cooldown.resolveType = "binding"
-    cooldownDescriptor.props.cooldown.value = {binding = "Test Spell", field = "cooldown"}
-    cooldownDescriptor.props.swipe.value = true
-    cooldownDescriptor.props.edge.value = false
-    cooldownDescriptor.props.colorMask.value = Color(1, 0, 0, 1)
+    local cooldownDescriptor = PropertyFactory.DefaultCooldownProperties()
+    cooldownDescriptor.cooldown.resolveType = "binding"
+    cooldownDescriptor.cooldown.value = {binding = "Test Spell", field = "cooldown"}
+    cooldownDescriptor.swipe.value = true
+    cooldownDescriptor.edge.value = false
+    cooldownDescriptor.colorMask.value = Color(1, 0, 0, 1)
+
+    iconDescriptor.props.cooldowns = {
+        chargeCooldown,
+        cooldownDescriptor
+    }
 
     testNode.frames = {
         iconDescriptor,
         textDescriptor,
-        chargeCooldown,
-        cooldownDescriptor,
     }
 
     testNode.bindings = {
@@ -105,15 +108,7 @@ function NeebelCore:OnInitialize()
     }
 
     RuntimeNodeManager:BuildAll({[testNode.guid] = testNode})
-    self.trackedObjects[testNode.guid] = testNode
-
-    self:RegisterEvent("SPELL_UPDATE_COOLDOWN", "UpdateCooldown")
-    self:RegisterEvent("SPELLS_CHANGED", "SpellChanged")
-    self:RegisterEvent("SPELL_UPDATE_CHARGES", "UpdateCharges")
-    self:RegisterEvent("UNIT_AURA", "UpdateAuras")
-    self:RegisterEvent("ACTIVE_PLAYER_SPECIALIZATION_CHANGED", "SpecChanged")
-
-    Timer:ScheduleRepeatingTimer(OnUpdate, 0.2)
+    self:ScheduleRepeatingTimer("Update", 0.1)
 end
 
 function NeebelCore:UpdateCooldown(event, spellId, baseSpellID, category, startRecoveryCategory)
@@ -154,8 +149,10 @@ function NeebelCore:SpecChanged()
     self:BuildSpellLookup()
 end
 
-function OnUpdate()
+function NeebelCore:Update()
+    DataContext.UpdateContext()
 
+    RuntimeNodeManager:UpdateNodes()
 end
 
 

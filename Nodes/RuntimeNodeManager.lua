@@ -33,7 +33,7 @@ function RuntimeNodeManager:BuildRuntimeNode(nodes, node, parentRuntimeNode)
 end
 
 function RuntimeNodeManager:UpdateNodes()
-    for _, runtimeNode in ipairs(self.roots) do
+    for _, runtimeNode in pairs(self.lookupTable) do
         runtimeNode:Update()
     end
 end

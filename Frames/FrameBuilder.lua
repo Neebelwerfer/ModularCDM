@@ -52,8 +52,20 @@ function FrameBuilder.BuildIconFrame(node, rootFrame, frameDescriptor, resolvedP
     frame:SetScale(frameDescriptor.transform.scale)
     frame.tex = frame:CreateTexture()
 
-    FrameBuilder.ApplyIconProps(frame, resolvedProps)
+    frame.cooldowns = {}
 
+    for i, _ in ipairs(frameDescriptor.props.cooldowns) do 
+        local cdName = FrameBuilder.GenerateFrameName(node.guid, frameDescriptor.name) .. "-" .. i
+        local cdFrame = CreateFrame("Cooldown", cdName, frame, "CooldownFrameTemplate")
+
+        cdFrame:SetSize(node.layout.size.width, node.layout.size.height)
+        cdFrame:SetAllPoints(frame)
+        cdFrame:SetScale(frameDescriptor.transform.scale)
+
+        table.insert(frame.cooldowns, cdFrame)
+    end
+
+    FrameBuilder.ApplyIconProps(frame, resolvedProps)
     return frame
 end
 
@@ -85,28 +97,6 @@ end
 
 ---@param node Node
 ---@param rootFrame Frame
----@param frameDescriptor FrameDescriptor<CooldownProps>
----@param resolvedProps table<string, any>
----@return Frame
-function FrameBuilder.BuildCooldownFrame(node, rootFrame, frameDescriptor, resolvedProps)
-    local name = FrameBuilder.GenerateFrameName(node.guid, frameDescriptor.name)
-    local frame = CreateFrame("Cooldown", name, rootFrame, "CooldownFrameTemplate")
-
-    frame:SetSize(node.layout.size.width, node.layout.size.height)
-    frame:SetPoint(
-        "CENTER",
-        rootFrame,
-        frameDescriptor.transform.offsetX,
-        frameDescriptor.transform.offsetY
-    )
-    frame:SetScale(frameDescriptor.transform.scale)
-
-    FrameBuilder.ApplyCooldownProps(frame, resolvedProps)
-    return frame
-end
-
----@param node Node
----@param rootFrame Frame
 ---@param frameDescriptor FrameDescriptor<BarProps>
 ---@param resolvedProps table<string, any>
 ---@return Frame
@@ -132,8 +122,8 @@ local creators = {
     [FrameTypes.Icon] = FrameBuilder.BuildIconFrame,
     [FrameTypes.Bar] = FrameBuilder.BuildBarFrame,
     [FrameTypes.Text] = FrameBuilder.BuildTextFrame,
-    [FrameTypes.Cooldown] = FrameBuilder.BuildCooldownFrame
 }
+
 ---comment
 ---@param node Node
 ---@param rootFrame Frame
@@ -150,16 +140,12 @@ function FrameBuilder.ApplyIconProps(frame, resolvedProps)
     local icon = resolvedProps.icon
     
     frame.tex:SetAllPoints(frame)
-    frame.tex:SetTexture(icon)
+    frame.tex:SetTexture(icon or 134400)
     frame.tex:SetVertexColor(color.r, color.g, color.b, color.a)
-end
 
-function FrameBuilder.ApplyTextProps(frame, resolvedProps)
-    frame.text:SetFont("Fonts\\FRIZQT__.TTF", resolvedProps.fontSize or 12, "OUTLINE")
-    frame.text:SetText(resolvedProps.text or "")
-
-    local color = resolvedProps.color
-    frame.text:SetTextColor(color.r, color.g, color.b, color.a)
+    for i, cd in ipairs(frame.cooldowns) do
+        FrameBuilder.ApplyCooldownProps(cd, resolvedProps.cooldowns[i])
+    end
 end
 
 function FrameBuilder.ApplyCooldownProps(frame, resolvedProps)
@@ -176,11 +162,23 @@ function FrameBuilder.ApplyCooldownProps(frame, resolvedProps)
     if cooldown then
         local startTime, duration = cooldown.start, cooldown.duration
         if duration and startTime then
-            frame:SetCooldown(startTime, duration)
+            local currentStart, currentDuration = frame:GetCooldownTimes()
+            if currentStart ~= startTime or currentDuration ~= duration then
+                frame:SetCooldown(startTime, duration)
+            end
         end
     end
     frame:SetHideCountdownNumbers(resolvedProps.hideCountdown or false)
 end
+
+function FrameBuilder.ApplyTextProps(frame, resolvedProps)
+    frame.text:SetFont("Fonts\\FRIZQT__.TTF", resolvedProps.fontSize or 12, "OUTLINE")
+    frame.text:SetText(resolvedProps.text or "")
+
+    local color = resolvedProps.color
+    frame.text:SetTextColor(color.r, color.g, color.b, color.a)
+end
+
 
 function FrameBuilder.ApplyBarProps(frame, resolvedProps)
     -- Set bar texture and color
@@ -198,7 +196,6 @@ local applyers = {
     [FrameTypes.Icon] = FrameBuilder.ApplyIconProps,
     [FrameTypes.Bar] = FrameBuilder.ApplyBarProps,
     [FrameTypes.Text] = FrameBuilder.ApplyTextProps,
-    [FrameTypes.Cooldown] = FrameBuilder.ApplyCooldownProps
 }
 
 function FrameBuilder.UpdateFrameByProps(frame, frameDescriptor, resolvedProps)

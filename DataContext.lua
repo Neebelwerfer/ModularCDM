@@ -209,5 +209,11 @@ function DataContext.HandleNestedFields(context, field)
 end
 
 function DataContext.UpdateContext()
-    
+    for typeName, type in pairs(DataTypes) do
+        if DataContext.context[type] then
+            for key, _ in pairs(DataContext.context[type]) do
+                DataContext.context[type][key] = contextCreators[type](key)
+            end
+        end
+    end
 end

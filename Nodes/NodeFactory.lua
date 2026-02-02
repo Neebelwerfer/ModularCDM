@@ -19,7 +19,6 @@ function NodeFactory.CreateIcon()
         name = "Icon",
         frames = {
             FrameDescriptionFactory.CreateIconFrame(),
-            FrameDescriptionFactory.CreateCooldownFrame(),
             FrameDescriptionFactory.CreateTextFrame()
         },
         layout = {
