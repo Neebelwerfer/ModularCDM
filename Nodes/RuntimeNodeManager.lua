@@ -32,8 +32,8 @@ function RuntimeNodeManager:BuildRuntimeNode(nodes, node, parentRuntimeNode)
     end
 end
 
-function RuntimeNodeManager:UpdateNodes(dataContext)
+function RuntimeNodeManager:UpdateNodes()
     for _, runtimeNode in ipairs(self.roots) do
-        runtimeNode:Update(dataContext)
+        runtimeNode:Update()
     end
 end

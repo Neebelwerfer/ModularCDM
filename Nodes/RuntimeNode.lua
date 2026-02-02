@@ -42,8 +42,8 @@ end
 
 
 function RuntimeNode:Update()
-    for _, frame in pairs(self.frames) do
-        self:UpdateFrame(frame.frame, frame.descriptor)
+    for _, frameContext in pairs(self.frames) do
+        self:UpdateFrame(frameContext.frame, frameContext.descriptor)
     end
 
     for _, childNode in pairs(self.node.children) do
@@ -69,7 +69,8 @@ end
 ---@param frame Frame
 ---@param descriptor FrameDescriptor
 function RuntimeNode:UpdateFrame(frame, descriptor)
-
+    local resolvedProps = self:ResolvePropsForFrame(descriptor)
+    FrameBuilder.UpdateFrameByProps(frame, descriptor, resolvedProps)
 end
 
 function RuntimeNode:ResolvePropsForFrame(frameDescription)

@@ -50,14 +50,9 @@ function FrameBuilder.BuildIconFrame(node, rootFrame, frameDescriptor, resolvedP
         frameDescriptor.transform.offsetY
     )
     frame:SetScale(frameDescriptor.transform.scale)
-    
-    local color = resolvedProps.colorMask
-    local icon = resolvedProps.icon
-    
     frame.tex = frame:CreateTexture()
-    frame.tex:SetAllPoints(frame)
-    frame.tex:SetTexture(icon)
-    frame.tex:SetVertexColor(color.r, color.g, color.b, color.a)
+
+    FrameBuilder.ApplyIconProps(frame, resolvedProps)
 
     return frame
 end
@@ -83,12 +78,8 @@ function FrameBuilder.BuildTextFrame(node, rootFrame, frameDescriptor, resolvedP
     -- Create FontString as child of the frame
     frame.text = frame:CreateFontString(nil, "OVERLAY")
     frame.text:SetAllPoints(frame)
-    frame.text:SetFont("Fonts\\FRIZQT__.TTF", resolvedProps.fontSize or 12, "OUTLINE")
-    frame.text:SetText(resolvedProps.text or "")
 
-    local color = resolvedProps.color
-    frame.text:SetTextColor(color.r, color.g, color.b, color.a)
-
+    FrameBuilder.ApplyTextProps(frame, resolvedProps)
     return frame
 end
 
@@ -110,23 +101,7 @@ function FrameBuilder.BuildCooldownFrame(node, rootFrame, frameDescriptor, resol
     )
     frame:SetScale(frameDescriptor.transform.scale)
 
-    -- Configure cooldown appearance
-    frame:SetDrawSwipe(resolvedProps.swipe)
-    frame:SetDrawEdge(resolvedProps.edge)
-    frame:SetReverse(resolvedProps.reverse)
-
-    -- Color mask
-    local color = resolvedProps.colorMask
-    -- frame:SetSwipeColor(color.r, color.g, color.b, color.a)
-
-    local cooldown = resolvedProps.cooldown
-    if cooldown then
-        local startTime, duration = cooldown.start, cooldown.duration
-        if duration and startTime then
-            frame:SetCooldown(startTime, duration)
-        end
-    end
-    frame:SetHideCountdownNumbers(resolvedProps.hideCountdown or false)
+    FrameBuilder.ApplyCooldownProps(frame, resolvedProps)
     return frame
 end
 
@@ -148,16 +123,7 @@ function FrameBuilder.BuildBarFrame(node, rootFrame, frameDescriptor, resolvedPr
     )
     frame:SetScale(frameDescriptor.transform.scale)
 
-    -- Set bar texture and color
-    frame:SetStatusBarTexture(resolvedProps.texture or "Interface\\TargetingFrame\\UI-StatusBar")
-
-    local color = resolvedProps.color
-    frame:GetStatusBarTexture():SetVertexColor(color.r, color.g, color.b, color.a)
-
-    -- Default min/max (will be updated via bindings later)
-    frame:SetMinMaxValues(0, 100)
-    frame:SetValue(50)
-
+    FrameBuilder.ApplyBarProps(frame, resolvedProps)
     return frame
 end
 
@@ -177,4 +143,67 @@ local creators = {
 function FrameBuilder.BuildFrameFromDescriptor(node, rootFrame, frameDescriptor, resolvedProps)
     local creator = creators[frameDescriptor.type]
     return creator(node, rootFrame, frameDescriptor, resolvedProps)
+end
+
+function FrameBuilder.ApplyIconProps(frame, resolvedProps)
+    local color = resolvedProps.colorMask
+    local icon = resolvedProps.icon
+    
+    frame.tex:SetAllPoints(frame)
+    frame.tex:SetTexture(icon)
+    frame.tex:SetVertexColor(color.r, color.g, color.b, color.a)
+end
+
+function FrameBuilder.ApplyTextProps(frame, resolvedProps)
+    frame.text:SetFont("Fonts\\FRIZQT__.TTF", resolvedProps.fontSize or 12, "OUTLINE")
+    frame.text:SetText(resolvedProps.text or "")
+
+    local color = resolvedProps.color
+    frame.text:SetTextColor(color.r, color.g, color.b, color.a)
+end
+
+function FrameBuilder.ApplyCooldownProps(frame, resolvedProps)
+    -- Configure cooldown appearance
+    frame:SetDrawSwipe(resolvedProps.swipe)
+    frame:SetDrawEdge(resolvedProps.edge)
+    frame:SetReverse(resolvedProps.reverse)
+
+    -- Color mask
+    local color = resolvedProps.colorMask
+    frame:SetSwipeColor(color.r, color.g, color.b, color.a)
+
+    local cooldown = resolvedProps.cooldown
+    if cooldown then
+        local startTime, duration = cooldown.start, cooldown.duration
+        if duration and startTime then
+            frame:SetCooldown(startTime, duration)
+        end
+    end
+    frame:SetHideCountdownNumbers(resolvedProps.hideCountdown or false)
+end
+
+function FrameBuilder.ApplyBarProps(frame, resolvedProps)
+    -- Set bar texture and color
+    frame:SetStatusBarTexture(resolvedProps.texture or "Interface\\TargetingFrame\\UI-StatusBar")
+
+    local color = resolvedProps.color
+    frame:GetStatusBarTexture():SetVertexColor(color.r, color.g, color.b, color.a)
+
+    -- Default min/max (will be updated via bindings later)
+    frame:SetMinMaxValues(0, 100)
+    frame:SetValue(50)
+end
+
+local applyers = {
+    [FrameTypes.Icon] = FrameBuilder.ApplyIconProps,
+    [FrameTypes.Bar] = FrameBuilder.ApplyBarProps,
+    [FrameTypes.Text] = FrameBuilder.ApplyTextProps,
+    [FrameTypes.Cooldown] = FrameBuilder.ApplyCooldownProps
+}
+
+function FrameBuilder.UpdateFrameByProps(frame, frameDescriptor, resolvedProps)
+    local applyer = applyers[frameDescriptor.type]
+    if applyer then
+        applyer(frame, resolvedProps)
+    end
 end
