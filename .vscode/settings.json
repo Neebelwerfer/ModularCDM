@@ -65,6 +65,13 @@
         "HUD_EDIT_MODE_RESET_POSITION",
         "Object",
         "CreateFramePoolCollection",
-        "class"
+        "class",
+        "EditModeManagerFrame",
+        "EditModeSettingDisplayInfoManager",
+        "EditModePresetLayoutManager",
+        "AddonList",
+        "DropDownList1",
+        "RAID_CLASS_COLORS",
+        "BuffIconCooldownViewer"
     ]
 }

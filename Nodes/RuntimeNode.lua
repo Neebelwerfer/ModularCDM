@@ -19,16 +19,18 @@ function RuntimeNode:new(node, parentRuntimeNode)
     self.parentRuntimeNode = parentRuntimeNode
     self.frames = {}
     
-    -- Determine parent frame
-    local parentFrame = parentRuntimeNode and parentRuntimeNode.rootFrame or UIParent
     
-    -- Build root frame
-    self.rootFrame = FrameBuilder.BuildRootFrame(node, parentFrame)
-
+    
     -- Register Bindings
     for _, binding in ipairs(node.bindings) do
         DataContext.RegisterBinding(self.guid, binding)
     end
+    
+    -- Determine parent frame
+    local parentFrame = parentRuntimeNode and parentRuntimeNode.rootFrame or UIParent
+
+    -- Build root frame
+    self.rootFrame = FrameBuilder.BuildRootFrame(node, parentFrame)
     
     -- Build all child frames from descriptors
     for _, frameDescriptor in ipairs(node.frames) do

@@ -4,25 +4,6 @@
 ---@field items table<number, ItemContext>
 ---@field resources table<string, ResourceContext>
 
----@class SpellContext
----@field id number
----@field name string
----@field icon string
----@field cooldown? fun(): { start: number, duration: number, modRate: number}
----@field charges? fun(): { current: number, max: number, cooldown?: { start: number, duration: number, modRate: number}}
----@field inRange boolean
----@field usable boolean
----@field noMana boolean
-
----@class AuraContext
----@field id number
----@field name string
----@field icon string
----@field isActive boolean
----@field stacks number
----@field duration { start: number, duration: number, remaining: number }
----@field source string -- "player", "target", etc.
-
 ---@class ItemContext
 ---@field id number
 ---@field name string
@@ -65,70 +46,9 @@ DataContext = {
     lastUpdate = 0
 }
 
-
-
----@param key number | string
----@return SpellContext
-local function CreateSpellContext(key)
-    local spellInfo = C_Spell.GetSpellInfo(key)
-    local charges = C_Spell.GetSpellCharges(key)
-    local cooldown = C_Spell.GetSpellCooldown(key)
-    local isUsable, noMana = C_Spell.IsSpellUsable(key)
-    local inRange = C_Spell.IsSpellInRange(key, "target")
-
-    local context = {
-        id = spellInfo.spellID,
-        name = spellInfo.name,
-        icon = spellInfo.iconID,
-        inRange = inRange,
-        usable = isUsable,
-        noMana = noMana,
-        internal = {}
-    }
-
-    if cooldown then
-        context.internal.cooldown = {
-            start = cooldown.startTime,
-            duration = cooldown.duration,
-            modRate = cooldown.modRate
-        }
-    end
-
-    context.cooldown = function()
-        if not context.internal.cooldown then return nil end
-        local cd = context.internal.cooldown
-        local remaining = (cd.start + cd.duration) - GetTime()
-        
-        if remaining <= 0 then return nil end
-        
-        return {
-            start = cd.start,
-            duration = cd.duration,
-            remaining = remaining,
-            modRate = cd.modRate
-        }
-    end
-
-    context.charges = function()
-        return context.internal.charges
-    end
-
-    if charges and charges.maxCharges > 1 then
-        context.internal.charges = {
-            current = charges.currentCharges,
-            max = charges.maxCharges,
-            cooldown = {
-                start = charges.cooldownStartTime,
-                duration = charges.cooldownDuration,
-                modRate = charges.chargeModRate
-            },
-        }
-    end
-    return context
-end
-
 local contextCreators = {
-    [DataTypes.Spell] = CreateSpellContext
+    [DataTypes.Spell] = SpellContext.Create,
+    [DataTypes.Aura] = AuraContext.Create,
 }
 
 ---Register a binding from a node

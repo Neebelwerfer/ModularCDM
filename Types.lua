@@ -25,7 +25,7 @@ DataTypes = {
     Item = 2,
     Aura = 3,
     Resource = 4,
-    Player = 5
+    Unit = 5
 }
 
 ---@enum GroupGrowDirection

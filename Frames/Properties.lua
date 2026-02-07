@@ -2,10 +2,10 @@ PropertyFactory = {}
 ---@class CooldownDescriptor
 ---@field cooldown BoundPropDescriptor
 ---@field hideCountdown FlexiblePropDescriptor<boolean>
----@field swipe FlexiblePropDescriptor<boolean>
----@field edge FlexiblePropDescriptor<boolean>
+---@field swipe {enabled: FlexiblePropDescriptor<boolean>, color: FlexiblePropDescriptor<Color>}
+---@field edge {enabled: FlexiblePropDescriptor<boolean>, color: FlexiblePropDescriptor<Color>, scale: FlexiblePropDescriptor<number>}
+---@field bling {enabled: FlexiblePropDescriptor<boolean>, color: FlexiblePropDescriptor<Color>}
 ---@field reverse FlexiblePropDescriptor<boolean>
----@field colorMask FlexiblePropDescriptor<Color>
 
 ---@class IconProps
 ---@field icon FlexiblePropDescriptor<string>
@@ -103,9 +103,9 @@ function PropertyFactory.DefaultCooldownProperties()
     return {
             cooldown = BoundProp("Cooldown", nil),
             hideCountdown = FlexibleProp("boolean", false),
-            swipe = FlexibleProp("boolean", true),
-            edge = FlexibleProp("boolean", false),
+            swipe = {enabled = FlexibleProp("boolean", true), color = FlexibleProp("Color", Color(0.0, 0.0, 0.0, 0.8))},
+            edge = {enabled = FlexibleProp("boolean", false), color = FlexibleProp("Color", Color(1, 1, 1, 1)), scale = FlexibleProp("number", 1.5)},
+            bling = {enabled = FlexibleProp("boolean", false), color = FlexibleProp("Color", Color(0.5, 0.5, 0.5, 1))},
             reverse = FlexibleProp("boolean", false),
-            colorMask = FlexibleProp("Color", Color(1, 1, 1, 1))
     }
 end

@@ -10,25 +10,25 @@ end
 ---@return Frame
 function FrameBuilder.BuildRootFrame(node, parentFrame)
     local name = FrameBuilder.GenerateFrameName(node.guid, "Root")
-    local frame = CreateFrame("Frame", name, parentFrame)
+    local root = CreateFrame("Frame", name, parentFrame)
 
 
-    frame:SetSize(node.layout.size.width, node.layout.size.height)
-    frame:SetPoint(node.transform.point, parentFrame, node.transform.relativePoint, node.transform.offsetX, node.transform.offsetY)
-    frame:SetScale(node.transform.scale)
+    root:SetSize(node.layout.size.width, node.layout.size.height)
+    root:SetPoint(node.transform.point, parentFrame, node.transform.relativePoint, node.transform.offsetX, node.transform.offsetY)
+    root:SetScale(node.transform.scale)
 
     -- Adding movement scripts, starts disabled
-    frame:SetScript("OnMouseDown", function(self, button)
+    root:SetScript("OnMouseDown", function(self, button)
         self:StartMoving()
     end)
-    frame:SetScript("OnMouseUp", function(self, button)
+    root:SetScript("OnMouseUp", function(self, button)
         self:StopMovingOrSizing()
         
     end)
-    frame:SetMovable(true)
-    frame:EnableMouse(false)
+    root:SetMovable(true)
+    root:EnableMouse(false)
 
-    return frame
+    return root
 end
 
 ---comment
@@ -61,7 +61,6 @@ function FrameBuilder.BuildIconFrame(node, rootFrame, frameDescriptor, resolvedP
         cdFrame:SetSize(node.layout.size.width, node.layout.size.height)
         cdFrame:SetAllPoints(frame)
         cdFrame:SetScale(frameDescriptor.transform.scale)
-
         table.insert(frame.cooldowns, cdFrame)
     end
 
@@ -148,25 +147,40 @@ function FrameBuilder.ApplyIconProps(frame, resolvedProps)
     end
 end
 
+---comment
+---@param frame Frame
+---@param resolvedProps table<string, any>
 function FrameBuilder.ApplyCooldownProps(frame, resolvedProps)
     -- Configure cooldown appearance
-    frame:SetDrawSwipe(resolvedProps.swipe)
-    frame:SetDrawEdge(resolvedProps.edge)
-    frame:SetReverse(resolvedProps.reverse)
-
+    
     -- Color mask
-    local color = resolvedProps.colorMask
-    frame:SetSwipeColor(color.r, color.g, color.b, color.a)
+    local swipe = resolvedProps.swipe
+    if swipe then
+        local color = swipe.color
+        frame:SetDrawSwipe(swipe.enabled)
+        frame:SetSwipeColor(color.r, color.g, color.b, color.a)
+        frame:SetSwipeTexture("", color.r, color.g, color.b, color.a)
+    end
+
+    local edge = resolvedProps.edge
+    if edge then
+        local color = edge.color
+        frame:SetDrawEdge(edge.enabled)
+        frame:SetEdgeColor(color.r, color.g, color.b, color.a)
+        frame:SetEdgeScale(edge.scale)
+    end
+
+    local bling = resolvedProps.bling
+    if bling then
+        local color = bling.color
+        frame:SetDrawBling(bling.enabled)
+        frame:SetBlingTexture("", color.r, color.g, color.b, color.a)
+    end
+    frame:SetReverse(resolvedProps.reverse)
 
     local cooldown = resolvedProps.cooldown
     if cooldown then
-        local startTime, duration = cooldown.start, cooldown.duration
-        if duration and startTime then
-            local currentStart, currentDuration = frame:GetCooldownTimes()
-            if currentStart ~= startTime or currentDuration ~= duration then
-                frame:SetCooldown(startTime, duration)
-            end
-        end
+        frame:SetCooldown(cooldown.start, cooldown.duration, cooldown.modRate or 1)
     end
     frame:SetHideCountdownNumbers(resolvedProps.hideCountdown or false)
 end

@@ -1,9 +1,8 @@
-NeebelCore = LibStub("AceAddon-3.0"):NewAddon("NeebelCDM", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
+NeebelCore = LibStub("AceAddon-3.0"):NewAddon("NeebelCDM", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 local addonName, env = ...
 local AC = LibStub("AceConfig-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
-local Timer = LibStub("AceTimer-3.0")
-local random = math.random
+
 
 
 env.CdManagerCategories = {
@@ -35,8 +34,6 @@ function NeebelCore:OnInitialize()
     end
     
     
-    self.pools = CreateFramePoolCollection()
-    self.trackedObjects = {}
 	self.db = LibStub("AceDB-3.0"):New("NeebelCDM_DB", self.defaults, true)
     self.mainFrame = CreateFrame("Frame", addonName, UIParent)
 
@@ -54,13 +51,51 @@ function NeebelCore:OnInitialize()
 
     self:BuildSpellLookup()
 
-    local testNode = NodeFactory.CreateIcon()
-    testNode.guid = "test-icon-001"
-    testNode.layout.size.width = 48
-    testNode.layout.size.height = 48
-    testNode.transform.point = "CENTER"
-    testNode.transform.offsetX = 0
-    testNode.transform.offsetY = 0
+    local premeditationNode = NodeFactory.CreateIcon()
+    premeditationNode.guid = "test-icon-002"
+    premeditationNode.layout.size.width = 48
+    premeditationNode.layout.size.height = 48
+    premeditationNode.transform.point = "CENTER"
+    premeditationNode.transform.offsetX = -0
+    premeditationNode.transform.offsetY = -0
+
+    local iconDescriptor = FrameDescriptionFactory.CreateIconFrame()
+    iconDescriptor.props.icon.resolveType = "binding"
+    iconDescriptor.props.icon.value = {binding = "Test Aura", field = "icon"}
+
+    local textDescriptor = FrameDescriptionFactory.CreateTextFrame()
+    textDescriptor.props.text.resolveType = "binding"
+    textDescriptor.props.text.value = {binding = "Test Aura", field = "stacks"}
+
+    local stackCooldown = PropertyFactory.DefaultCooldownProperties()
+    stackCooldown.cooldown.resolveType = "binding"
+    stackCooldown.cooldown.value = {binding = "Test Aura", field = "duration"}
+    stackCooldown.reverse.value = true
+
+    iconDescriptor.props.cooldowns = {
+        stackCooldown
+    }
+
+    premeditationNode.bindings = {
+        {
+            type = DataTypes.Aura,
+            alias = "Test Aura",
+            key = 457052,
+        }
+    }
+
+    premeditationNode.frames = {
+        iconDescriptor,
+        textDescriptor
+    }
+
+    local shadowDanceNode = NodeFactory.CreateIcon()
+    shadowDanceNode.guid = "test-icon-001"
+    shadowDanceNode.layout.size.width = 48
+    shadowDanceNode.layout.size.height = 48
+    shadowDanceNode.transform.point = "CENTER"
+    shadowDanceNode.transform.offsetX = 10
+    shadowDanceNode.transform.offsetY = -125
 
     -- Add an icon frame descriptor (if not already there by default)
     local iconDescriptor = FrameDescriptionFactory.CreateIconFrame()
@@ -77,29 +112,27 @@ function NeebelCore:OnInitialize()
     local chargeCooldown = PropertyFactory.DefaultCooldownProperties()
     chargeCooldown.cooldown.resolveType = "binding"
     chargeCooldown.cooldown.value = {binding = "Test Spell", field = "charges.cooldown"}
-    chargeCooldown.swipe.value = false
-    chargeCooldown.edge.value = true
-    chargeCooldown.reverse.value = true
+    chargeCooldown.swipe.enabled.value = false
+    chargeCooldown.edge.enabled.value = true
     chargeCooldown.hideCountdown.value = true
 
     local cooldownDescriptor = PropertyFactory.DefaultCooldownProperties()
     cooldownDescriptor.cooldown.resolveType = "binding"
     cooldownDescriptor.cooldown.value = {binding = "Test Spell", field = "cooldown"}
-    cooldownDescriptor.swipe.value = true
-    cooldownDescriptor.edge.value = false
-    cooldownDescriptor.colorMask.value = Color(1, 0, 0, 1)
+    cooldownDescriptor.swipe.enabled.value = true
+    cooldownDescriptor.edge.enabled.value = false
 
     iconDescriptor.props.cooldowns = {
         chargeCooldown,
         cooldownDescriptor
     }
 
-    testNode.frames = {
+    shadowDanceNode.frames = {
         iconDescriptor,
         textDescriptor,
     }
 
-    testNode.bindings = {
+    shadowDanceNode.bindings = {
         {
             type = DataTypes.Spell,
             alias = "Test Spell",
@@ -107,13 +140,21 @@ function NeebelCore:OnInitialize()
         }
     }
 
-    RuntimeNodeManager:BuildAll({[testNode.guid] = testNode})
-    self:ScheduleRepeatingTimer("Update", 0.1)
+    RuntimeNodeManager:BuildAll({[shadowDanceNode.guid] = shadowDanceNode, [premeditationNode.guid] = premeditationNode})
+    self:ScheduleRepeatingTimer("Update", 0.5)
+
+    self:RegisterEvent("UNIT_AURA", "UpdateAuras")
+    self:RegisterEvent("SPELL_UPDATE_COOLDOWN", "UpdateCooldown")
 end
+
 
 function NeebelCore:UpdateCooldown(event, spellId, baseSpellID, category, startRecoveryCategory)
     if spellId == nil and baseSpellID == nil then
         return
+    end
+
+    if spellId == 196912 or baseSpellID == 196912 then
+        print("test")
     end
 
     if spellId then
@@ -133,8 +174,50 @@ function NeebelCore:UpdateCharges(event)
     DirtyState["charges"] = true
 end
 
-function NeebelCore:UpdateAuras(event, unitToken, auraData)
-    
+TableTest = {}
+---comment
+---@param event any
+---@param unit any
+---@param info UnitAuraUpdateInfo
+function NeebelCore:UpdateAuras(event, unit, info)
+	-- if info.isFullUpdate then
+	-- 	print("full update") -- loop over all auras, etc
+    --     for i = 1, 40 do
+    --         local data = C_UnitAuras.GetAuraDataBySlot(unit, i)
+    --         if data then
+    --             print(data.name, issecretvalue(data.spellID), issecretvalue(data.auraInstanceID))
+    --         end
+    --     end
+	-- 	return
+	-- end
+	-- if info.addedAuras then
+	-- 	local t = ""
+	-- 	for _, v in pairs(info.addedAuras) do
+    --         t = t .. format("%d(%s)", v.auraInstanceID, v.name)
+    --         print(v.name, issecretvalue(v.spellId), v.spellId)
+	-- 	end
+	-- 	print(unit, "|cnGREEN_FONT_COLOR:added|r", t)
+	-- end
+	-- if info.updatedAuraInstanceIDs then
+	-- 	local t = ""
+	-- 	for _, v in pairs(info.updatedAuraInstanceIDs) do
+	-- 		local aura = C_UnitAuras.GetAuraDataByAuraInstanceID(unit, v)
+    --         TableTest[aura.spellId] = aura
+    --         t = t .. format("%d(%s)", v, aura.name)
+	-- 	end
+	-- 	print(unit, "|cnYELLOW_FONT_COLOR:updated|r", t)
+	-- end
+	-- if info.removedAuraInstanceIDs then
+	-- 	local t = ""
+	-- 	for _, v in pairs(info.removedAuraInstanceIDs) do
+	-- 		t = t .. format("%d", v)
+	-- 	end
+	-- 	print(unit, "|cnRED_FONT_COLOR:removed|r", t)
+	-- end
+
+    -- if TableTest[196912] then
+    --     print("test")
+    -- end
 end
 
 function NeebelCore:SlashCommand()

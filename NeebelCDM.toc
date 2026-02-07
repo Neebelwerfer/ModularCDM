@@ -24,6 +24,7 @@ Libs\AceTab-3.0\AceTab-3.0.xml
 Libs\AceSerializer-3.0\AceSerializer-3.0.xml
 Libs\LibSharedMedia-3.0\lib.xml
 Libs\LibEQOL\LibEQOL.xml
+Libs\LibDeflate\lib.xml
 
 Utils.lua
 Types.lua
@@ -36,8 +37,14 @@ Nodes/RuntimeNodeManager.lua
 Frames/FrameDescriptionFactory.lua
 Frames/FrameBuilder.lua
 Frames/Properties.lua
-DataContext.lua
+Data/AuraContext.lua
+Data/SpellContext.lua
+Data/ResourceContext.lua
+Data/ItemContext.lua
+Data/UnitContext.lua
+Data/DataContext.lua
 Core.lua
 Bindings.lua
 Options.lua
 CooldownSpell.lua
+Serializer.lua

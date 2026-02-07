@@ -5,7 +5,7 @@ Node.__index = Node
 local function DefaultTransform()
     return {
         point = "CENTER",
-        relativePoint = nil,
+        relativePoint = "CENTER",
         offsetX = 0,
         offsetY = 0,
         scale = 1
