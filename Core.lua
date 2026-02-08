@@ -148,6 +148,8 @@ function NeebelCore:OnInitialize()
 
     self:RegisterEvent("UNIT_AURA", "UpdateAuras")
     self:RegisterEvent("SPELL_UPDATE_COOLDOWN", "UpdateCooldown")
+
+    CooldownViewerIntegration:Initialize()
 end
 
 

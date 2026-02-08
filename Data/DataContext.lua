@@ -30,7 +30,9 @@ DataContext = {
         auras = {},
         items = {},
         resources = {},
-        player = {}
+        unit = {
+            player = {}
+        }
     },
 
     dirty = { -- Tracks which parts of the context have changed
@@ -48,7 +50,7 @@ DataContext = {
 
 local contextCreators = {
     [DataTypes.Spell] = SpellContext.Create,
-    [DataTypes.Aura] = AuraContext.Create,
+    [DataTypes.Aura] = AuraContextManager.AddContext,
 }
 
 ---Register a binding from a node
@@ -106,11 +108,7 @@ end
 ---@param field string
 ---@return any?
 function DataContext.ResolveBinding(type, key, field)
-    if type == DataTypes.Player then
-        return DataContext.context[type][field] or nil
-    else
-        return DataContext.HandleNestedFields(DataContext.context[type][key], field) or nil
-    end
+    return DataContext.HandleNestedFields(DataContext.context[type][key], field) or nil
 end
 
 function DataContext.HandleNestedFields(context, field)

@@ -1,8 +1,9 @@
 CooldownViewerIntegration = {
-    map = {},
+    cache = {},
+    initialized = false
 }
 
-function CooldownViewerIntegration.BuildMap()
+function CooldownViewerIntegration:BuildCache()
     if InCombatLockdown() then
         return
     end
@@ -30,5 +31,45 @@ function CooldownViewerIntegration.BuildMap()
         end
     end
 
-    CooldownViewerIntegration.map = map
+    self.cache = map
+end
+
+
+function CooldownViewerIntegration:AddEventListeners()
+    if CooldownViewerIntegration.initialized then
+        return
+    end
+
+    hooksecurefunc(BuffIconCooldownViewer, "UpdateSystem", function(self, ...)
+        print("UpdateSystem")
+    end)
+
+    hooksecurefunc(BuffIconCooldownViewer, "RefreshData", function(self, ...)
+        print("RefreshData")
+        CooldownViewerIntegration:BuildCache()
+    end)
+
+    
+    hooksecurefunc(BuffIconCooldownViewer, "OnUnitAura", function(self, ...)
+        
+        end)
+end
+
+function CooldownViewerIntegration:Initialize()
+    if CooldownViewerIntegration.initialized then
+        return
+    end
+
+    self:BuildCache()
+    self:AddEventListeners()
+    self.initialized = true
+end
+
+function CooldownViewerIntegration:Dispose()
+    if not CooldownViewerIntegration.initialized then
+        return
+    end
+
+    self.cache = {}
+    self.initialized = false
 end
