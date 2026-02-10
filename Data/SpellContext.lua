@@ -1,3 +1,47 @@
+SpellContextManager = {
+    contexts = {}, -- context registry
+    initialized = false,
+
+    subscribers = {} -- { [key] = { [guid] = true } }
+}
+
+function SpellContextManager.Initialize()
+    if SpellContextManager.initialized then
+        return
+    end
+    SpellContextManager.initialized = true
+end
+
+-- Registers a new context to the manager
+function SpellContextManager.Register(sourceGuid, key)
+    local context = SpellContext:new(key)
+    SpellContextManager.contexts[key] = context
+    return context
+end
+
+-- Unregisters a context
+function SpellContextManager.Unregister(sourceGuid, key)
+    SpellContextManager.contexts[key] = nil
+end
+
+-- Retrieves a context
+function SpellContextManager.GetContext(key)
+    return SpellContextManager.contexts[key]
+end
+
+-- Updates all contexts
+function SpellContextManager.Update()
+    for _, context in pairs(SpellContextManager.contexts) do
+        context:Update()
+    end
+end
+
+
+
+
+
+
+
 ---@class SpellContext
 ---@field id number
 ---@field name string
@@ -9,15 +53,14 @@
 ---@field noMana boolean
 
 SpellContext = {}
-
----@param key number | string
----@return SpellContext
-function SpellContext.Create(key)
+SpellContext.__index = SpellContext
+function SpellContext:new(key)
     local spellInfo = C_Spell.GetSpellInfo(key)
     local charges = C_Spell.GetSpellCharges(key)
     local cooldown = C_Spell.GetSpellCooldown(key)
     local isUsable, noMana = C_Spell.IsSpellUsable(key)
     local inRange = C_Spell.IsSpellInRange(key, "target")
+
 
     local context = {
         id = spellInfo.spellID,
@@ -43,20 +86,45 @@ function SpellContext.Create(key)
         }
     }
 
-    if cooldown then
-        context.internal.cooldownDurationUtil = C_Spell.GetSpellCooldownDuration(key)
-    end
-
     context.cooldown.remaining = function()
-        if not context.internal.cooldownDurationUtil then return 0 end
-        return context.internal.cooldownDurationUtil:GetRemainingDuration(Enum.DurationTimeModifier.RealTime) or 0
+        if not self.internal.cooldownDurationUtil then return 0 end
+        return self.internal.cooldownDurationUtil:GetRemainingDuration(Enum.DurationTimeModifier.RealTime) or 0
     end
 
     context.cooldown.isActive = function()
-        return context.internal.cooldown and not context.internal.cooldown.durationUtil:IsZero()
+        return self.internal.cooldown and not self.internal.cooldown.durationUtil:IsZero()
     end
 
-    context.internal.charges = {
+    setmetatable(context, self)
+    return context
+end
+
+function SpellContext:Update()
+    local spellInfo = C_Spell.GetSpellInfo(self.id)
+    local charges = C_Spell.GetSpellCharges(self.id)
+    local cooldown = C_Spell.GetSpellCooldown(self.id)
+    local isUsable, noMana = C_Spell.IsSpellUsable(self.id)
+    local inRange = C_Spell.IsSpellInRange(self.id, "target")
+
+    self.name = spellInfo.name
+    self.icon = spellInfo.iconID
+
+    if cooldown then
+        self.internal.cooldownDurationUtil = C_Spell.GetSpellCooldownDuration(self.id)
+        self.cooldown.start = cooldown.startTime
+        self.cooldown.duration = cooldown.duration
+        self.cooldown.modRate = cooldown.modRate
+    else
+        self.internal.cooldownDurationUtil = nil
+        self.cooldown.start = 0
+        self.cooldown.duration = 0
+    end
+
+    self.inRange = inRange
+    self.usable = isUsable
+    self.noMana = noMana
+
+    self.charges = {
         current = charges.currentCharges,
         max = charges.maxCharges,
         cooldown = {
@@ -65,5 +133,4 @@ function SpellContext.Create(key)
             modRate = charges.chargeModRate
         },
     }
-    return context
 end

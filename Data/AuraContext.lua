@@ -31,14 +31,14 @@ end
 
 -- Registers a new context to the manager
 -- TODO: Handle the case where the context is already registered, and since we use names we should look what we do between handling SpellID vs Spell names; an aura could have multiple spellIDs connected!!!
-function AuraContextManager.Register(key)
+function AuraContextManager.Register(sourceGuid, key)
     local context = AuraContext:new(key)
     AuraContextManager.contexts[key] = context
     return context
 end
 
 -- Unregisters a context
-function AuraContextManager.Unregister(key)
+function AuraContextManager.Unregister(sourceGuid, key)
     AuraContextManager.contexts[key] = nil
 end
 

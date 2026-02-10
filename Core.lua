@@ -49,8 +49,6 @@ function ModularCore:OnInitialize()
     self:RegisterChatCommand("ModularCDM", "SlashCommand")
     self:RegisterChatCommand("ncdm", "SlashCommand")
 
-    self:BuildSpellLookup()
-
     local premeditationNode = NodeFactory.CreateIcon()
     premeditationNode.guid = "test-icon-002"
     premeditationNode.layout.size.width = 48
@@ -189,21 +187,6 @@ function ModularCore:Update()
     DataContext.UpdateContext()
 
     RuntimeNodeManager:UpdateNodes()
-end
-
-
-function ModularCore:BuildSpellLookup()
-    local spells = {}
-    for i, v in ipairs(env.CdManagerCategories) do
-        local categorySet = C_CooldownViewer.GetCooldownViewerCategorySet(v, true)
-        if categorySet then
-            for i, v in ipairs(categorySet) do
-                local spell = CooldownSpell:new(v)
-                spells[spell.id] = spell
-            end
-        end
-    end
-    env.spellLookup = spells
 end
 
 function ModularCore:OnEnable()

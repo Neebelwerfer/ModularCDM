@@ -46,5 +46,4 @@ Data/DataContext.lua
 Core.lua
 Bindings.lua
 Options.lua
-CooldownSpell.lua
 Serializer.lua
