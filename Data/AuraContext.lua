@@ -3,24 +3,24 @@ The Context for Auras act a little different compared to the other context since
 Since the only way we can couple SpellID with auraInstanceID is through said frames, it is required by the user to add the buffs to the active part of the CDM to be registered.
 ]]
 AuraContextManager = {
-    contexts = {},
-    auraIDToFrame = {},
+    contexts = {}, -- context registry
+    auraIDToFrame = {}, -- auraInstanceID -> frame
+    frameToContext = {}, -- frame -> context
 
-    CDMCache = {},
-    frameToContext = {},
     initialized = false
 }
 
+-- Initializes the context manager and builds the CDM cache
 function AuraContextManager.Initialize()
     if AuraContextManager.initialized then
         return
     end
     
-    AuraContextManager.BuildCDMCache()
+    AuraContextManager.ConnectFramesToContexts()
     
     hooksecurefunc(BuffIconCooldownViewer, "RefreshData", function(self, ...)
         print("RefreshData")
-        AuraContextManager.BuildCDMCache()
+        AuraContextManager.ConnectFramesToContexts()
     end)
 
     
@@ -29,39 +29,49 @@ function AuraContextManager.Initialize()
     AuraContextManager.initialized = true
 end
 
+-- Registers a new context to the manager
+-- TODO: Handle the case where the context is already registered, and since we use names we should look what we do between handling SpellID vs Spell names; an aura could have multiple spellIDs connected!!!
 function AuraContextManager.Register(key)
     local context = AuraContext:new(key)
     AuraContextManager.contexts[key] = context
     return context
 end
 
+-- Unregisters a context
 function AuraContextManager.Unregister(key)
     AuraContextManager.contexts[key] = nil
 end
 
+-- Retrieves a context
 function AuraContextManager.GetContext(key)
     return AuraContextManager.contexts[key]
 end
 
-
+-- Updates all contexts
 function AuraContextManager.Update()
+    for frame, context in pairs(AuraContextManager.frameToContext) do
+        local auraInstanceID = frame:GetAuraSpellInstanceID()
+        if auraInstanceID then
+            context:Update(frame, auraInstanceID)
+        end
+    end
 end
 
-
+-- Rebuild the contexts from scratch (Might not be needed now)
 function AuraContextManager.Rebuild()
-    assert(not InCombatLockdown(), "Cannot rebuild while in combat")
+    assert(not InCombatLockdown(), "Cannot rebuild while in combat") -- Maybe should just return instead of throwing an error
     
     for key, _ in pairs(AuraContextManager.contexts) do
         local new = AuraContext:new(key)
         AuraContextManager.contexts[key] = new
     end
 
-    AuraContextManager.BuildCDMCache()
+    AuraContextManager.ConnectFramesToContexts()
 end
 
-
-function AuraContextManager.BuildCDMCache()
-    assert(not InCombatLockdown(), "Cannot build CDM cache while in combat")
+-- Builds the connection between frames and contexts
+function AuraContextManager.ConnectFramesToContexts()
+    assert(not InCombatLockdown(), "Cannot rebuild connections while in combat") -- Maybe should just return instead of throwing an error
 
     local map = {}
     for _,k in ipairs(BuffIconCooldownViewer:GetLayoutChildren()) do
@@ -95,24 +105,17 @@ function AuraContextManager.BuildCDMCache()
             end
         end
     end
-
-    AuraContextManager.CDMCache = map
     AuraContextManager.frameToContext = frameToContext
 end
 
 ---Update loop called when BuffIconCooldownViewer & BuffBarCooldownViewer gets aura updated
----@param manager any
----@param unit any
----@param updateInfo any
+---@param manager table
+---@param unit string
+---@param updateInfo {isFullUpdate: boolean, addedAuras: table, updatedAuraInstanceIDs: table, removedAuraInstanceIDs: table}
 function AuraContextManager.UpdateAuras(manager, unit, updateInfo)
     -- Update all tracked Auras
 	if updateInfo.isFullUpdate then
-        for frame, context in pairs(AuraContextManager.frameToContext) do
-            local auraInstanceID = frame:GetAuraSpellInstanceID()
-            if auraInstanceID then
-                context:Update(frame, auraInstanceID)
-            end
-        end
+        AuraContextManager.Update()
     end
 
     -- Find and connect auraInstanceID with spell data so we can update the contexts later
@@ -162,6 +165,9 @@ function AuraContextManager.UpdateAuras(manager, unit, updateInfo)
 	end
 end
 
+--- A data structure for representing an aura. 
+--- ince the data is going to be dependant on the blizzard CDM, 
+--- it is required by the user to add the buffs to the active part of the CDM to be registered.
 ---@class AuraContext
 ---@field id number
 ---@field name string
@@ -197,8 +203,12 @@ function AuraContext:new(key)
     return context
 end
 
+--- Updates the context for the given frame and auraInstanceIDs.
+--- If the frame is nil, the context will be reset
 function AuraContext:Update(frame, auraInstanceID, auraData)
     if frame and auraInstanceID then
+        assert(type(auraInstanceID) == "number", "AuraInstanceID must be a number")
+
         local aura = auraData or C_UnitAuras.GetAuraDataByAuraInstanceID("player", auraInstanceID) or C_UnitAuras.GetAuraDataByAuraInstanceID("target", auraInstanceID)
         if aura then
             local duration = C_UnitAuras.GetAuraDuration("player", aura.auraInstanceID) or C_UnitAuras.GetAuraDuration("target", aura.auraInstanceID)
