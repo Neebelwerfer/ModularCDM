@@ -21,6 +21,8 @@ PropertyFactory = {}
 ---@field min FlexiblePropDescriptor<number>
 ---@field max FlexiblePropDescriptor<number>
 ---@field value BoundPropDescriptor<number>
+---@field reverse FlexiblePropDescriptor<boolean>
+---@field orientation StaticPropDescriptor<string>
 
 ---@class TextProps
 ---@field text FlexiblePropDescriptor<string>
@@ -93,7 +95,9 @@ function PropertyFactory.DefaultBarProperties()
         color = FlexibleProp("Color", Color(1, 1, 1, 1)),
         min = FlexibleProp("number", 0),
         max = FlexibleProp("number", 100),
-        value = BoundProp("number", nil)
+        value = BoundProp("number", nil),
+        reverse = FlexibleProp("boolean", false),
+        orientation = StaticProp("string", "HORIZONTAL")
     }
 end
 

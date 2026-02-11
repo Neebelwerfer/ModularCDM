@@ -182,10 +182,11 @@ function FrameBuilder.ApplyBarProps(frame, resolvedProps)
     -- Set bar texture and color
     frame:SetStatusBarTexture(resolvedProps.texture or "Interface\\TargetingFrame\\UI-StatusBar")
 
+    
     local color = resolvedProps.color
-    frame:GetStatusBarTexture():SetVertexColor(color.r, color.g, color.b, color.a)
-
-    -- Default min/max (will be updated via bindings later)
+    frame:SetStatusBarColor(color.r, color.g, color.b, color.a)
+    frame:SetOrientation(resolvedProps.orientation or "HORIZONTAL")
+    frame:SetReverseFill(resolvedProps.reverse or false)
     frame:SetMinMaxValues(resolvedProps.min or 0, resolvedProps.max or 100)
     frame:SetValue(resolvedProps.value or 0)
 end
