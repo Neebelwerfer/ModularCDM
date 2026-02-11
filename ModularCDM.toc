@@ -34,6 +34,7 @@ Nodes/Node.lua
 Nodes/NodeFactory.lua
 Nodes/RuntimeNode.lua
 Nodes/RuntimeNodeManager.lua
+Frames/FramePools.lua
 Frames/FrameDescriptionFactory.lua
 Frames/FrameBuilder.lua
 Frames/Properties.lua

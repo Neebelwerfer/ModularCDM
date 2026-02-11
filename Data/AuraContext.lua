@@ -144,7 +144,6 @@ function AuraContextManager.UpdateAuras(manager, unit, updateInfo)
                 local frame = frames[1]
                 local context = AuraContextManager.frameToContext[frame]
                 if context then
-                    print("Updating", context.name, v.auraInstanceID)
                     context:Update(frame, v.auraInstanceID, v)
                 end
                 AuraContextManager.auraIDToFrame[v.auraInstanceID] = frame
@@ -159,7 +158,6 @@ function AuraContextManager.UpdateAuras(manager, unit, updateInfo)
             if frame then
                 local context = AuraContextManager.frameToContext[frame]
                 if context then
-                    print("Updating", context.name, v)
                     context:Update(frame, v)
                 end
             end
@@ -171,7 +169,6 @@ function AuraContextManager.UpdateAuras(manager, unit, updateInfo)
 		for _, v in pairs(updateInfo.removedAuraInstanceIDs) do
             local frame = AuraContextManager.auraIDToFrame[v]
             if frame then
-                print("Removed",frame, v)
                 local context = AuraContextManager.frameToContext[frame]
                 if context then
                     context:Update()

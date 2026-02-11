@@ -1,42 +1,23 @@
 FrameBuilder = {}
-local appName, env = ...
-
-function FrameBuilder.GenerateFrameName(guid, frameName)
-    return appName .. ":" .. guid .. "-" .. frameName
-end
-
 
 ---@param node Node
 ---@param parentFrame Frame
 ---@param resolvedFrameProps table<string, table<string, any>>
 ---@return Frame
 function FrameBuilder.BuildRootFrame(node, parentFrame, resolvedFrameProps)
-    local name = FrameBuilder.GenerateFrameName(node.guid, "Root")
-    local root = CreateFrame("Frame", name, parentFrame)
-
+    local root = FramePools.AquireFrame("Root", parentFrame)
 
     root:SetSize(node.layout.size.width, node.layout.size.height)
     root:SetPoint(node.transform.point, parentFrame, node.transform.relativePoint, node.transform.offsetX, node.transform.offsetY)
     root:SetScale(node.transform.scale)
-
-    -- Adding movement scripts, starts disabled
-    root:SetScript("OnMouseDown", function(self, button)
-        self:StartMoving()
-    end)
-    root:SetScript("OnMouseUp", function(self, button)
-        self:StopMovingOrSizing()
-        
-    end)
-    root:SetMovable(true)
-    root:EnableMouse(false)
-
-    root.frames = {}
-
+    
+    
     for _, frameDescriptor in pairs(node.frames) do
         local frame = FrameBuilder.BuildFrameFromDescriptor(node, root, frameDescriptor, resolvedFrameProps[frameDescriptor.name])
         root.frames[frameDescriptor.name] = {frame = frame, descriptor = frameDescriptor}
     end
-
+    
+    root:Show()
     return root
 end
 
@@ -47,10 +28,8 @@ end
 ---@param resolvedProps table<string, any>
 ---@return Frame
 function FrameBuilder.BuildIconFrame(node, rootFrame, frameDescriptor, resolvedProps)
-    local name = FrameBuilder.GenerateFrameName(node.guid, frameDescriptor.name)
-    local frame = CreateFrame("Frame", name, rootFrame, "BackdropTemplate")
+    local frame = FramePools.AquireFrame("Icon", rootFrame)
 
-    
     frame:SetSize(node.layout.size.width, node.layout.size.height)
     frame:SetPoint(
         "CENTER",
@@ -59,21 +38,19 @@ function FrameBuilder.BuildIconFrame(node, rootFrame, frameDescriptor, resolvedP
         frameDescriptor.transform.offsetY
     )
     frame:SetScale(frameDescriptor.transform.scale)
-    frame.tex = frame:CreateTexture()
 
-    frame.cooldowns = {}
-
-    for i, _ in ipairs(frameDescriptor.props.cooldowns) do 
-        local cdName = FrameBuilder.GenerateFrameName(node.guid, frameDescriptor.name) .. "-" .. i
-        local cdFrame = CreateFrame("Cooldown", cdName, frame, "CooldownFrameTemplate")
+    
+    for i, _ in ipairs(frameDescriptor.props.cooldowns) do
+        local cdFrame = FramePools.AquireFrame("Cooldown", frame)
 
         cdFrame:SetSize(node.layout.size.width, node.layout.size.height)
         cdFrame:SetAllPoints(frame)
         cdFrame:SetScale(frameDescriptor.transform.scale)
         table.insert(frame.cooldowns, cdFrame)
     end
-
     FrameBuilder.ApplyIconProps(frame, resolvedProps)
+
+    frame:Show()
     return frame
 end
 
@@ -83,8 +60,7 @@ end
 ---@param resolvedProps table<string, any>
 ---@return Frame
 function FrameBuilder.BuildTextFrame(node, rootFrame, frameDescriptor, resolvedProps)
-    local name = FrameBuilder.GenerateFrameName(node.guid, frameDescriptor.name)
-    local frame = CreateFrame("Frame", name, rootFrame)
+    local frame = FramePools.AquireFrame("Text", rootFrame)
 
     frame:SetSize(node.layout.size.width, node.layout.size.height)
     frame:SetPoint(
@@ -96,10 +72,9 @@ function FrameBuilder.BuildTextFrame(node, rootFrame, frameDescriptor, resolvedP
     frame:SetScale(frameDescriptor.transform.scale)
 
     -- Create FontString as child of the frame
-    frame.text = frame:CreateFontString(nil, "OVERLAY")
-    frame.text:SetAllPoints(frame)
-
     FrameBuilder.ApplyTextProps(frame, resolvedProps)
+
+    frame:Show()
     return frame
 end
 
@@ -109,8 +84,7 @@ end
 ---@param resolvedProps table<string, any>
 ---@return Frame
 function FrameBuilder.BuildBarFrame(node, rootFrame, frameDescriptor, resolvedProps)
-    local name = FrameBuilder.GenerateFrameName(node.guid, frameDescriptor.name)
-    local frame = CreateFrame("StatusBar", name, rootFrame)
+    local frame = FramePools.AquireFrame("Bar", rootFrame)
 
     frame:SetSize(node.layout.size.width, node.layout.size.height)
     frame:SetPoint(
@@ -124,7 +98,6 @@ function FrameBuilder.BuildBarFrame(node, rootFrame, frameDescriptor, resolvedPr
     FrameBuilder.ApplyBarProps(frame, resolvedProps)
     return frame
 end
-
 
 local creators = {
     [FrameTypes.Icon] = FrameBuilder.BuildIconFrame,
