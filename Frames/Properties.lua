@@ -18,6 +18,9 @@ PropertyFactory = {}
 ---@class BarProps
 ---@field texture FlexiblePropDescriptor<string>
 ---@field color FlexiblePropDescriptor<Color>
+---@field min FlexiblePropDescriptor<number>
+---@field max FlexiblePropDescriptor<number>
+---@field value BoundPropDescriptor<number>
 
 ---@class TextProps
 ---@field text FlexiblePropDescriptor<string>
@@ -87,7 +90,10 @@ end
 function PropertyFactory.DefaultBarProperties()
     return {
         texture = FlexibleProp("string", "Interface\\TargetingFrame\\UI-StatusBar"),
-        color = FlexibleProp("Color", Color(1, 1, 1, 1))
+        color = FlexibleProp("Color", Color(1, 1, 1, 1)),
+        min = FlexibleProp("number", 0),
+        max = FlexibleProp("number", 100),
+        value = BoundProp("number", nil)
     }
 end
 

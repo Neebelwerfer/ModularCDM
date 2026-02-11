@@ -96,6 +96,8 @@ function FrameBuilder.BuildBarFrame(node, rootFrame, frameDescriptor, resolvedPr
     frame:SetScale(frameDescriptor.transform.scale)
 
     FrameBuilder.ApplyBarProps(frame, resolvedProps)
+
+    frame:Show()
     return frame
 end
 
@@ -184,8 +186,8 @@ function FrameBuilder.ApplyBarProps(frame, resolvedProps)
     frame:GetStatusBarTexture():SetVertexColor(color.r, color.g, color.b, color.a)
 
     -- Default min/max (will be updated via bindings later)
-    frame:SetMinMaxValues(0, 100)
-    frame:SetValue(50)
+    frame:SetMinMaxValues(resolvedProps.min or 0, resolvedProps.max or 100)
+    frame:SetValue(resolvedProps.value or 0)
 end
 
 local applyers = {

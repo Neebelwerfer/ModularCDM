@@ -6,16 +6,6 @@
 
 
 DataContext = {
-    context = { -- Current game data
-        spells = {},
-        auras = {},
-        items = {},
-        resources = {},
-        unit = {
-            player = {}
-        }
-    },
-
     dirty = { -- Tracks which parts of the context have changed
         spells = {},
         auras = {},
@@ -26,14 +16,13 @@ DataContext = {
     bindings = {}, -- Tracks subscribers of each binding
 
     updateInterval = 0.5,
-    lastUpdate = 0
-}
+    lastUpdate = 0,
 
-local contextManagers = {
-    [DataTypes.Spell] = SpellContextManager,
-    [DataTypes.Aura] = AuraContextManager,
+    managers = {
+        [DataTypes.Spell] = SpellContextManager,
+        [DataTypes.Aura] = AuraContextManager
+    }
 }
-
 
 function DataContext.Initialize()
     AuraContextManager.Initialize()
@@ -43,7 +32,7 @@ end
 ---@param sourceGuid string
 ---@param binding BindingDescriptor
 function DataContext.RegisterBinding(sourceGuid, binding)
-    contextManagers[binding.type].Register(sourceGuid, binding.key)
+    DataContext.managers[binding.type].Register(sourceGuid, binding.key)
 end
 
 
@@ -51,7 +40,7 @@ end
 ---@param sourceGuid string
 ---@param binding BindingDescriptor
 function DataContext.UnregisterBinding(sourceGuid, binding)
-    contextManagers[binding.type].Unregister(sourceGuid, binding.key)
+    DataContext.managers[binding.type].Unregister(sourceGuid, binding.key)
 end
 
 ---comment
@@ -60,7 +49,7 @@ end
 ---@param field string
 ---@return any?
 function DataContext.ResolveBinding(type, key, field)
-    return DataContext.HandleNestedFields(contextManagers[type].contexts[key], field)
+    return DataContext.HandleNestedFields(DataContext.managers[type].contexts[key], field)
 end
 
 function DataContext.HandleNestedFields(context, field)

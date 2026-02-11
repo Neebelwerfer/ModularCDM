@@ -207,10 +207,9 @@ function AuraContext:new(key)
         internal = { info = info, duration = nil },
     }
 
-    context.duration.remaining = function()
-        if not self.internal.duration then return 0 end
-        print(self.internal.duration:GetRemainingDuration())
-        return self.internal.duration:GetRemainingDuration()
+    context.remaining = function()
+        if not context.internal.duration then return 0 end
+        return context.internal.duration:GetRemainingDuration()
     end
 
     setmetatable(context, self)

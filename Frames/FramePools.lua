@@ -101,6 +101,7 @@ FramePools.cooldown = CreateFramePool("Cooldown", nil, "CooldownFrameTemplate", 
 
 local function BarFrameInit(frame)
     frame.frameType = "Bar"
+    frame:SetStatusBarTexture("Interface/TargetingFrame/UI-StatusBar")
 end
 
 local function BarFrameReset(_, frame)
@@ -109,7 +110,6 @@ local function BarFrameReset(_, frame)
     frame:Hide()
     frame:SetMinMaxValues(0, 100)
     frame:SetValue(0)
-    frame:SetStatusBarTexture(nil)
 end
 FramePools.bar = CreateFramePool("StatusBar", nil, nil, BarFrameReset, nil, BarFrameInit)
 
