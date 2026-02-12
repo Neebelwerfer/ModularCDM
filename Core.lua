@@ -47,14 +47,14 @@ function ModularCore:OnInitialize()
 	ACD:AddToBlizOptions("ModularCDM_Profiles", "Profiles", "ModularCDM")
 
     self:RegisterChatCommand("ModularCDM", "SlashCommand")
-    self:RegisterChatCommand("ncdm", "SlashCommand")
+    self:RegisterChatCommand("mcdm", "SlashCommand")
 
 
     local dynamicGroup = NodeFactory.CreateDynamicGroup()
     dynamicGroup.guid = "test-dynamic-group-001"
     dynamicGroup.transform.scale = 1
     dynamicGroup.transform.point = "CENTER"
-    dynamicGroup.transform.offsetX = 0
+    dynamicGroup.transform.offsetX = -0
     dynamicGroup.transform.offsetY = 0
 
     local premeditationNode = NodeFactory.CreateIcon()
@@ -218,11 +218,7 @@ function ModularCore:UpdateCharges(event)
 end
 
 function ModularCore:SlashCommand()
-    if ACD.OpenFrames["ModularCDM_Options"] then
-        ACD:Close("ModularCDM_Options")
-    else
-        ACD:Open("ModularCDM_Options")
-    end
+    EditorManager.Open()
 end
 
 function ModularCore:SpecChanged()

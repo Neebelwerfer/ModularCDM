@@ -2,9 +2,8 @@ FrameBuilder = {}
 
 ---@param node Node
 ---@param parentFrame Frame
----@param resolvedFrameProps table<string, table<string, any>>
 ---@return Frame
-function FrameBuilder.BuildRootFrame(node, parentFrame, resolvedFrameProps)
+function FrameBuilder.BuildRootFrame(node, parentFrame)
     local root = FramePools.AquireFrame("Root", parentFrame)
 
     root:SetSize(node.layout.size.width, node.layout.size.height)
@@ -12,8 +11,8 @@ function FrameBuilder.BuildRootFrame(node, parentFrame, resolvedFrameProps)
     root:SetScale(node.transform.scale)
     
     for _, frameDescriptor in pairs(node.frames) do
-        local frame = FrameBuilder.BuildFrameFromDescriptor(node, root, frameDescriptor, resolvedFrameProps[frameDescriptor.name])
-        root.frames[frameDescriptor.name] = {frame = frame, descriptor = frameDescriptor}
+        local frame = FrameBuilder.BuildFrameFromDescriptor(node, root, frameDescriptor)
+        root.frames[frameDescriptor.name] = frame
     end
 
     root:Show()
@@ -24,21 +23,9 @@ end
 ---@param node Node
 ---@param rootFrame Frame
 ---@param frameDescriptor FrameDescriptor<IconProps>
----@param resolvedProps table<string, any>
----@return Frame
-function FrameBuilder.BuildIconFrame(node, rootFrame, frameDescriptor, resolvedProps)
+---@return PropertyFrame
+function FrameBuilder.BuildIconFrame(node, rootFrame, frameDescriptor)
     local frame = FramePools.AquireFrame("Icon", rootFrame)
-
-    frame:SetSize(node.layout.size.width, node.layout.size.height)
-    frame:SetPoint(
-        "CENTER",
-        rootFrame,
-        frameDescriptor.transform.relativePoint,
-        frameDescriptor.transform.offsetX,
-        frameDescriptor.transform.offsetY
-    )
-    frame:SetScale(frameDescriptor.transform.scale)
-
     
     for i, _ in ipairs(frameDescriptor.props.cooldowns) do
         local cdFrame = FramePools.AquireFrame("Cooldown", frame)
@@ -46,59 +33,48 @@ function FrameBuilder.BuildIconFrame(node, rootFrame, frameDescriptor, resolvedP
         cdFrame:SetSize(node.layout.size.width, node.layout.size.height)
         cdFrame:SetAllPoints(frame)
         cdFrame:SetScale(frameDescriptor.transform.scale)
-        table.insert(frame.cooldowns, cdFrame)
+        table.insert(frame.cooldowns, PropertyFrame:New(cdFrame, frameDescriptor, FrameBuilder.ApplyCooldownProps))
     end
-    FrameBuilder.ApplyIconProps(frame, resolvedProps)
-
     frame:Show()
-    return frame
+
+    return PropertyFrame:New(frame, frameDescriptor, FrameBuilder.ApplyIconProps, function (propertyFrame, layout)
+        local frame = propertyFrame.frame
+        frame:SetSize(layout.size.width, layout.size.height)
+        frame:SetPoint(
+            "CENTER",
+            rootFrame,
+            frameDescriptor.transform.relativePoint,
+            frameDescriptor.transform.offsetX,
+            frameDescriptor.transform.offsetY
+        )
+        frame:SetScale(frameDescriptor.transform.scale)
+
+        for _, cdFrame in pairs(frame.cooldowns) do
+            cdFrame:UpdateTransform(layout)
+        end
+    end)
 end
 
 ---@param node Node
 ---@param rootFrame Frame
 ---@param frameDescriptor FrameDescriptor<TextProps>
----@param resolvedProps table<string, any>
----@return Frame
-function FrameBuilder.BuildTextFrame(node, rootFrame, frameDescriptor, resolvedProps)
+---@return PropertyFrame
+function FrameBuilder.BuildTextFrame(node, rootFrame, frameDescriptor)
     local frame = FramePools.AquireFrame("Text", rootFrame)
-
-    frame:SetSize(node.layout.size.width, node.layout.size.height)
-    frame:SetPoint(
-        "CENTER",
-        rootFrame,
-        frameDescriptor.transform.offsetX,
-        frameDescriptor.transform.offsetY
-    )
-    frame:SetScale(frameDescriptor.transform.scale)
-
-    -- Create FontString as child of the frame
-    FrameBuilder.ApplyTextProps(frame, resolvedProps)
-
     frame:Show()
-    return frame
+
+    return PropertyFrame:New(frame, frameDescriptor, FrameBuilder.ApplyTextProps)
 end
 
 ---@param node Node
 ---@param rootFrame Frame
 ---@param frameDescriptor FrameDescriptor<BarProps>
----@param resolvedProps table<string, any>
----@return Frame
-function FrameBuilder.BuildBarFrame(node, rootFrame, frameDescriptor, resolvedProps)
+---@return PropertyFrame
+function FrameBuilder.BuildBarFrame(node, rootFrame, frameDescriptor)
     local frame = FramePools.AquireFrame("Bar", rootFrame)
-
-    frame:SetSize(node.layout.size.width, node.layout.size.height)
-    frame:SetPoint(
-        "CENTER",
-        rootFrame,
-        frameDescriptor.transform.offsetX,
-        frameDescriptor.transform.offsetY
-    )
-    frame:SetScale(frameDescriptor.transform.scale)
-
-    FrameBuilder.ApplyBarProps(frame, resolvedProps)
-
     frame:Show()
-    return frame
+
+    return PropertyFrame:New(frame, frameDescriptor, FrameBuilder.ApplyBarProps)
 end
 
 local creators = {
@@ -111,11 +87,10 @@ local creators = {
 ---@param node Node
 ---@param rootFrame Frame
 ---@param frameDescriptor FrameDescriptor
----@param resolvedProps table<string, any>
----@return Frame
-function FrameBuilder.BuildFrameFromDescriptor(node, rootFrame, frameDescriptor, resolvedProps)
+---@return PropertyFrame
+function FrameBuilder.BuildFrameFromDescriptor(node, rootFrame, frameDescriptor)
     local creator = creators[frameDescriptor.type]
-    return creator(node, rootFrame, frameDescriptor, resolvedProps)
+    return creator(node, rootFrame, frameDescriptor)
 end
 
 function FrameBuilder.ApplyIconProps(frame, resolvedProps)
@@ -127,7 +102,7 @@ function FrameBuilder.ApplyIconProps(frame, resolvedProps)
     frame.tex:SetVertexColor(color.r, color.g, color.b, color.a)
 
     for i, cd in ipairs(frame.cooldowns) do
-        FrameBuilder.ApplyCooldownProps(cd, resolvedProps.cooldowns[i])
+        FrameBuilder.ApplyCooldownProps(cd.frame, resolvedProps.cooldowns[i])
     end
 end
 

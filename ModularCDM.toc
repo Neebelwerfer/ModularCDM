@@ -35,6 +35,7 @@ Nodes/NodeFactory.lua
 Nodes/RuntimeNode.lua
 Nodes/RuntimeNodeManager.lua
 Frames/FramePools.lua
+Frames/PropertyFrame.lua
 Frames/FrameDescriptionFactory.lua
 Frames/FrameBuilder.lua
 Frames/Properties.lua
@@ -48,3 +49,4 @@ Core.lua
 Bindings.lua
 Options.lua
 Serializer.lua
+Editor/EditorManager.lua

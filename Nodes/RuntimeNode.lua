@@ -1,7 +1,7 @@
 ---@class RuntimeNode
 ---@field node Node
 ---@field guid string
----@field frames table<string, {frame: Frame, descriptor: FrameDescriptor}>
+---@field frames table<string, PropertyFrame>
 ---@field rootFrame Frame
 ---@field parentRuntimeNode? RuntimeNode
 ---@field internalState table
@@ -28,18 +28,10 @@ function RuntimeNode:new(node, parentRuntimeNode)
         DataContext.RegisterBinding(runtimeNode.guid, binding)
     end
     
-    -- Get all the resolved props 
-    -- TODO: Re-think this loop?
-    local resolvedPropsPerFrame = {}
-    for _, frameDescriptor in ipairs(node.frames) do
-        local resolvedProps = runtimeNode:ResolvePropsForFrame(frameDescriptor)
-        resolvedPropsPerFrame[frameDescriptor.name] = resolvedProps
-    end
-
     -- Determine parent frame
     local parentFrame = parentRuntimeNode and parentRuntimeNode.rootFrame or UIParent
     -- Build root frame and all child frames
-    runtimeNode.rootFrame = FrameBuilder.BuildRootFrame(node, parentFrame, resolvedPropsPerFrame)
+    runtimeNode.rootFrame = FrameBuilder.BuildRootFrame(node, parentFrame)
 
     return runtimeNode
 end
@@ -50,11 +42,15 @@ function RuntimeNode:UpdateTransforms()
     self.rootFrame:SetSize(self.node.layout.size.width, self.node.layout.size.height)
     self.rootFrame:SetPoint(self.node.transform.point, parentFrame, self.node.transform.relativePoint, self.node.transform.offsetX, self.node.transform.offsetY)
     self.rootFrame:SetScale(self.node.transform.scale)
+
+    for _, frameContext in pairs(self.rootFrame.frames) do
+        frameContext:UpdateTransform(self.node.layout)
+    end
 end
 
 function RuntimeNode:Update()
     for _, frameContext in pairs(self.rootFrame.frames) do
-        self:UpdateFrame(frameContext.frame, frameContext.descriptor)
+        self:UpdateFrame(frameContext)
     end
 
     for _, childGuid in pairs(self.node.children) do
@@ -143,11 +139,10 @@ end
 ------------------------------------
 
 --- Updates a frame
----@param frame Frame
----@param descriptor FrameDescriptor
-function RuntimeNode:UpdateFrame(frame, descriptor)
-    local resolvedProps = self:ResolvePropsForFrame(descriptor)
-    FrameBuilder.UpdateFrameByProps(frame, descriptor, resolvedProps)
+---@param frameContext PropertyFrame
+function RuntimeNode:UpdateFrame(frameContext)
+    local resolvedProps = self:ResolvePropsForFrame(frameContext.descriptor)
+    frameContext:UpdateProperties(resolvedProps)
 end
 
 --- Updates all properties for a frame
