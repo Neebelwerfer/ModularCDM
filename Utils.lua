@@ -10,3 +10,6 @@ function GenerateGUID()
     end)
     return guid
 end
+
+
+QuestionMark = "Interface\\Icons\\INV_Misc_QuestionMark"

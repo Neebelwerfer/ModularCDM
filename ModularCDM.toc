@@ -46,7 +46,11 @@ Data/ItemContext.lua
 Data/UnitContext.lua
 Data/DataContext.lua
 Core.lua
+BlizzardCDMHandler.lua
 Bindings.lua
 Options.lua
 Serializer.lua
 Editor/EditorManager.lua
+Editor/NodesTab.lua
+Editor/SettingsTab.lua
+Editor/CDMTab.lua

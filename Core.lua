@@ -190,7 +190,7 @@ function ModularCore:OnInitialize()
     RuntimeNodeManager.BuildAll({[dynamicGroup.guid] = dynamicGroup, [premeditationNode.guid] = premeditationNode, [shadowDanceNode.guid] = shadowDanceNode, [testNode.guid] = testNode})
     self:ScheduleRepeatingTimer("Update", 0.2)
 
-    -- self:RegisterEvent("SPELL_UPDATE_COOLDOWN", "UpdateCooldown")
+    BlizzardCDMHandler.Initialize()
     DataContext.Initialize()
 end
 
@@ -218,6 +218,10 @@ function ModularCore:UpdateCharges(event)
 end
 
 function ModularCore:SlashCommand()
+    if EditorManager.IsOpen() then
+        EditorManager.Close()
+        return
+    end
     EditorManager.Open()
 end
 
