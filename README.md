@@ -18,13 +18,18 @@ Early phase - Just figuring out the structure and experimenting
     - [ ] Editable nodes
     - [ ] Property settings
     - [ ] Bindings menu
-    - [ ] Additional CDM options menu?
+    - [x] Additional CDM options menu
 - [ ] Events?
     - [ ] Spell Events (Going off/on cd, getting full charges)
     - [ ] Aura Events (Activated, Removed)
 - [ ] Conditionals and Visibility
     - [ ] Visibility for notes based on load rules
     - [ ] Conditionals (very constrained conditional system)
+- [ ] Refactor
+    - [ ] Move frame offset from layout to properties so it fits better with the system
+    - [ ] Split the frame update functions into multiple functions, one for each property
+    - [ ] Make sure we dont update static properties since they never change
+    - [ ] Remake the whole Blizzard Manager integration and aura and blizzard manager hooks to be more stable
 
 ## The goal
 The goal of this project is to learn a bit about WoW api and Data-driven design in terms of creating modular UI
