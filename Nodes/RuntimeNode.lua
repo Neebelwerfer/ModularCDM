@@ -168,7 +168,7 @@ function RuntimeNode:ResolveProp(prop)
     -- Handle prop descriptors
     if prop.resolveType == "static" then
         return prop.value
-    elseif prop.resolveType == "binding" then
+    elseif prop.resolveType == "binding" or prop.resolveType == "template" then
         if prop.value then
             local binding = self:FindBinding(prop.value.binding)
             if binding then
