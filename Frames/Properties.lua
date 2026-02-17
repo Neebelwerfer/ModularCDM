@@ -92,12 +92,10 @@ function PropertyFactory.DefaultIconPropeties()
 end
 
 ---@return table<string, PropertyMetadata>
-function PropertyFactory.IconPropertyMetadata()
-    return {
-        icon = PropertyMetadata({"static", "binding"}, "string"),
-        colorMask = PropertyMetadata({"static"}, "Color"),
-    }
-end
+PropertyFactory.IconPropertyMetadata = {
+    icon = PropertyMetadata({"static", "binding"}, "string"),
+    colorMask = PropertyMetadata({"static"}, "Color"),
+}
 
 function PropertyFactory.DefaultBarProperties()
     return {
@@ -111,17 +109,17 @@ function PropertyFactory.DefaultBarProperties()
     }
 end
 
-function PropertyFactory.BarPropertyMetadata()
-    return {
-        texture = PropertyMetadata({"static"}, "string"), -- TODO: Texture handling
-        color = PropertyMetadata({"static"}, "Color"),
-        min = PropertyMetadata({"static", "binding"}, "number"),
-        max = PropertyMetadata({"static", "binding"}, "number"),
-        value = PropertyMetadata({"binding"}, "number"),
-        reverse = PropertyMetadata({"static"}, "boolean"),
-        orientation = PropertyMetadata({"static"}, "string") -- TODO: Enum
-    }
-end
+---@return table<string, PropertyMetadata>
+PropertyFactory.BarPropertyMetadata = {
+    texture = PropertyMetadata({"static"}, "string"), -- TODO: Texture handling
+    color = PropertyMetadata({"static"}, "Color"),
+    min = PropertyMetadata({"static", "binding"}, "number"),
+    max = PropertyMetadata({"static", "binding"}, "number"),
+    value = PropertyMetadata({"binding"}, "number"),
+    reverse = PropertyMetadata({"static"}, "boolean"),
+    orientation = PropertyMetadata({"static"}, "string") -- TODO: Enum
+}
+
 
 function PropertyFactory.DefaultTextProperties()
     return {
@@ -131,13 +129,12 @@ function PropertyFactory.DefaultTextProperties()
     }
 end
 
-function PropertyFactory.TextPropertyMetadata()
-    return {
-        text = PropertyMetadata({"template"}, "string"),
-        color = PropertyMetadata({"static"}, "Color"),
-        fontSize = PropertyMetadata({"static", "binding"}, "number")
-    }
-end
+---@return table<string, PropertyMetadata>
+PropertyFactory.TextPropertyMetadata ={
+    text = PropertyMetadata({"template"}, "string"),
+    color = PropertyMetadata({"static"}, "Color"),
+    fontSize = PropertyMetadata({"static", "binding"}, "number")
+}
 
 function PropertyFactory.DefaultCooldownProperties()
     return {
@@ -150,23 +147,22 @@ function PropertyFactory.DefaultCooldownProperties()
     }
 end
 
-function PropertyFactory.CooldownPropertyMetadata()
-    return {
-        cooldown = PropertyMetadata({"binding"}, "string"),
-        hideCountdown = PropertyMetadata({"static", "binding"}, "boolean"),
-        swipe = {
-            enabled = PropertyMetadata({"static", "binding"}, "boolean"),
-            color = PropertyMetadata({"static"}, "Color")
-        },
-        edge = {
-            enabled = PropertyMetadata({"static", "binding"}, "boolean"),
-            color = PropertyMetadata({"static"}, "Color"),
-            scale = PropertyMetadata({"static"}, "number")
-        },
-        bling = {
-            enabled = PropertyMetadata({"static", "binding"}, "boolean"),
-            color = PropertyMetadata({"static"}, "Color")
-        },
-        reverse = PropertyMetadata({"static", "binding"}, "boolean")
-    }
-end
+---@return table<string, PropertyMetadata>
+PropertyFactory.CooldownPropertyMetadata = {
+    cooldown = PropertyMetadata({"binding"}, "string"),
+    hideCountdown = PropertyMetadata({"static", "binding"}, "boolean"),
+    swipe = {
+        enabled = PropertyMetadata({"static", "binding"}, "boolean"),
+        color = PropertyMetadata({"static"}, "Color")
+    },
+    edge = {
+        enabled = PropertyMetadata({"static", "binding"}, "boolean"),
+        color = PropertyMetadata({"static"}, "Color"),
+        scale = PropertyMetadata({"static"}, "number")
+    },
+    bling = {
+        enabled = PropertyMetadata({"static", "binding"}, "boolean"),
+        color = PropertyMetadata({"static"}, "Color")
+    },
+    reverse = PropertyMetadata({"static", "binding"}, "boolean")
+}
