@@ -44,7 +44,7 @@ Early phase - Just figuring out the structure and experimenting
     - [ ] Make dynamic group actually change layout settings for children so it wont get awkward later
 - [ ] Fixes
     - [ ] Layout: Anchor point seems to behaver weirdly
-    - [ ] Layout/Editor: Scroll frame not working properly
+    - [x] Layout/Editor: Scroll frame not working properly
 
 ## The goal
 The goal of this project is to learn a bit about WoW Api and Data-driven design in terms of creating modular UI

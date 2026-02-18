@@ -115,7 +115,9 @@ function NodesTab.OnNodeSelected(container, event, path)
     inspectorTabs:SetTabs({
         {text="Properties", value="properties"},
         {text="Layout", value="layout"},
-        {text="Bindings", value="bindings"}
+        {text="Bindings", value="bindings"},
+        {text="Conditions", value="conditions"},
+        {text="Load", value="load"},
     })
     inspectorTabs:SetCallback("OnGroupSelected", NodesTab.OnInspectorTabSelected)
     inspectorTabs:SelectTab(NodesTab.currentInspectorGroup)
@@ -139,8 +141,6 @@ function NodesTab.OnInspectorTabSelected(container, event, group)
     elseif group == "bindings" then
         NodesTab.BuildBindingsPanel(container)
     end
-
-    container:DoLayout()
 end
 
 
@@ -153,17 +153,11 @@ function NodesTab.BuildPropertiesPanel(container)
     assert(runtimeNode, "Tree nodes not matching runtime nodes")
     
     local node = runtimeNode.node
-    
-    local scrollContainer = AceGUI:Create("SimpleGroup")
-    scrollContainer:SetFullWidth(true)
-    scrollContainer:SetFullHeight(true)
-    scrollContainer:SetLayout("Fill")
-    container:AddChild(scrollContainer)
 
     -- Scroll frame for all properties
     local scroll = AceGUI:Create("ScrollFrame")
     scroll:SetLayout("Flow")
-    scrollContainer:AddChild(scroll)
+    container:AddChild(scroll)
     
     -- Node metadata
     local metaGroup = AceGUI:Create("InlineGroup")
@@ -360,17 +354,19 @@ function NodesTab.BuildLayoutPanel(container)
         runtimeNode:MarkLayoutAsDirty()
     end)
     
-    -- Scale
-    NodesTab.CreateNumberInput(transformGroup, "Scale", nodeTransform.scale or 1, 1, function(value)
-        nodeTransform.scale = value
-        runtimeNode:MarkLayoutAsDirty()
-    end)
     
     -- Size Section
-    local sizeGroup = AceGUI:Create("SimpleGroup")
+    local sizeGroup = AceGUI:Create("InlineGroup")
+    sizeGroup:SetTitle("Size")
     sizeGroup:SetFullWidth(true)
     sizeGroup:SetLayout("Flow")
     scroll:AddChild(sizeGroup)
+
+    -- Scale
+    NodesTab.CreateNumberInput(sizeGroup, "Scale", nodeTransform.scale or 1, 1, function(value)
+        nodeTransform.scale = value
+        runtimeNode:MarkLayoutAsDirty()
+    end)
     
     NodesTab.CreateNumberInput(sizeGroup, "Width", nodeLayout.size.width, 0.5, function(value)
         nodeLayout.size.width = value
@@ -383,7 +379,8 @@ function NodesTab.BuildLayoutPanel(container)
     end)
     
     -- Dynamic Layout Section
-    local dynamicGroup = AceGUI:Create("SimpleGroup")
+    local dynamicGroup = AceGUI:Create("InlineGroup")
+    dynamicGroup:SetTitle("Dynamic Layout")
     dynamicGroup:SetFullWidth(true)
     dynamicGroup:SetLayout("Flow")
     scroll:AddChild(dynamicGroup)
@@ -440,7 +437,7 @@ function NodesTab.BuildLayoutPanel(container)
         dynamicGroup:AddChild(collapseCheckbox)
     end
 
-    container:DoLayout()
+    scroll:DoLayout()
 end
 
 -- Helper Functions
