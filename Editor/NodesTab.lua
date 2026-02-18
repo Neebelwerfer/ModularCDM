@@ -16,12 +16,14 @@ function NodesTab.Build(container)
     treeGroup:SetCallback("OnGroupSelected", NodesTab.OnNodeSelected)
     container:AddChild(treeGroup)
     NodesTab.treeGroup = treeGroup
+    NodesTab.currentInspectorGroup = "properties"
     
     -- Select first node
     if not NodesTab.selectedNodeGuid and #RuntimeNodeManager.roots > 0 then
         local firstRoot = RuntimeNodeManager.roots[1]
         treeGroup:SelectByPath(firstRoot.guid)
     end
+
 end
 
 function NodesTab.BuildTree()
@@ -93,7 +95,8 @@ function NodesTab.OnNodeSelected(container, event, path)
             end)
         end
     end
-
+    
+    NodesTab.inspectorTabs = nil
     container:ReleaseChildren()
     if path == "add" then
         print("Add Node") -- TODO: Use container to show add templates.
@@ -115,10 +118,10 @@ function NodesTab.OnNodeSelected(container, event, path)
         {text="Bindings", value="bindings"}
     })
     inspectorTabs:SetCallback("OnGroupSelected", NodesTab.OnInspectorTabSelected)
-    inspectorTabs:SelectTab("properties")
+    inspectorTabs:SelectTab(NodesTab.currentInspectorGroup)
     container:AddChild(inspectorTabs)
     
-    -- NodesTab.OnInspectorTabSelected(container, nil, "properties")
+    NodesTab.inspectorTabs = inspectorTabs
 end
 
 function NodesTab.OnInspectorTabSelected(container, event, group)
@@ -127,6 +130,8 @@ function NodesTab.OnInspectorTabSelected(container, event, group)
     container:SetFullHeight(true)
     container:SetFullWidth(true)
     
+    NodesTab.currentInspectorGroup = group
+
     if group == "properties" then
         NodesTab.BuildPropertiesPanel(container)
     elseif group == "layout" then
@@ -174,7 +179,7 @@ function NodesTab.BuildPropertiesPanel(container)
     nameInput:SetFullWidth(true)
     nameInput:SetCallback("OnEnterPressed", function(widget, event, text)
         node.name = text
-        NodesTab.Refresh()
+        NodesTab.Repaint()
     end)
     metaGroup:AddChild(nameInput)
     
@@ -276,7 +281,7 @@ function NodesTab.BuildPropEditor(container, label, propDescriptor, valueType, o
         dropdown:SetFullWidth(true)
         dropdown:SetCallback("OnValueChanged", function(widget, event, value)
             propDescriptor.resolveType = value
-            NodesTab.RefreshInspector()
+            NodesTab.RepaintInspector()
         end)
         container:AddChild(dropdown)
     end
@@ -390,7 +395,7 @@ function NodesTab.BuildLayoutPanel(container)
     enabledCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
         nodeLayout.dynamic.enabled = value
         runtimeNode:MarkLayoutAsDirty()
-        NodesTab.RefreshInspector()
+        NodesTab.RepaintInspector()
     end)
     dynamicGroup:AddChild(enabledCheckbox)
     
@@ -568,8 +573,7 @@ function NodesTab.BuildBindingsPanel(container)
             deleteButton:SetWidth(120)
             deleteButton:SetCallback("OnClick", function()
                 runtimeNode:RemoveBinding(i)
-                container:ReleaseChildren()
-                NodesTab.BuildBindingsPanel(container)
+                NodesTab.RepaintInspector()
             end)
             bindingRow:AddChild(deleteButton)
         end
@@ -595,6 +599,7 @@ function NodesTab.ShowBindingEditor(nodeGuid, bindingIndex)
     frame:SetLayout("Flow")
     frame:SetWidth(400)
     frame:SetHeight(300)
+    frame.frame:SetFrameStrata("TOOLTIP")
     frame:SetCallback("OnClose", function(widget)
         AceGUI:Release(widget)
     end)
@@ -662,6 +667,7 @@ function NodesTab.ShowBindingEditor(nodeGuid, bindingIndex)
             runtimeNode:AddBinding(newBinding)
         end       
         frame:Hide()
+        NodesTab.RepaintInspector()
     end)
     buttonGroup:AddChild(saveButton)
 end
@@ -735,8 +741,24 @@ function NodesTab.GetBindingIcon(binding)
 end
 
 
---TODO: Dont rebuild the whole ui everytime. Right now its just easier
-function NodesTab.Refresh()
+-- Full refresh (tree structure changed)
+function NodesTab.Repaint()
     NodesTab.container:ReleaseChildren()
     NodesTab.Build(NodesTab.container)
+end
+
+-- Just refresh the current inspector panel
+function NodesTab.RepaintInspector()
+    if NodesTab.inspectorTabs then
+        NodesTab.inspectorTabs:SelectTab(NodesTab.currentInspectorGroup)
+    end
+end
+
+-- Just refresh the tree (when node name changes)
+function NodesTab.RepaintTree()
+    NodesTab.treeGroup:SetTree(NodesTab.BuildTree())
+    -- Reselect current node
+    if NodesTab.selectedNodeGuid then
+        NodesTab.treeGroup:SelectByPath(NodesTab.selectedNodeGuid)
+    end
 end
