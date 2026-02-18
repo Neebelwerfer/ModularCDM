@@ -23,9 +23,9 @@ Early phase - Just figuring out the structure and experimenting
         - [ ] Cooldown
         - [ ] Text
         - [ ] Bar
-    - [ ] Node layout settings
+    - [x] Node layout settings
         - [x] Basic layout settings
-        - [ ] Dynamic group settings
+        - [x] Dynamic group settings
     - [x] Bindings menu
         - [x] Binding Creation
         - [x] Binding list and deletion

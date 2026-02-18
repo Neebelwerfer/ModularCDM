@@ -1,0 +1,8 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlGUIS:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+    <Script file="SpellContext.lua"/>
+    <Script file="AuraContext.lua"/>
+    <Script file="ItemContext.lua"/>
+    <Script file="ResourceContext.lua"/>
+    <Script file="UnitContext.lua"/>
+    <Script file="DataContext.lua"/>
+</Ui>
