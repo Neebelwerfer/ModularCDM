@@ -42,6 +42,7 @@ Early phase - Just figuring out the structure and experimenting
     - [ ] Make sure we dont update static properties since they never change
     - [ ] Remake the whole Blizzard Manager integration and aura and blizzard manager hooks to be more stable
     - [ ] Make dynamic group actually change layout settings for children so it wont get awkward later
+    - [ ] Add validation when adding bindings etc. 
 - [ ] Fixes
     - [ ] Layout: Anchor point seems to behaver weirdly
     - [x] Layout/Editor: Scroll frame not working properly
