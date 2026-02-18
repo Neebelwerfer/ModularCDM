@@ -29,125 +29,113 @@ function PropertiesPanel.Build(container)
         NodesTab.Repaint()
     end)
     metaGroup:AddChild(nameInput)
-    
-    -- Enabled
-    local enabledCheckbox = AceGUI:Create("CheckBox")
-    enabledCheckbox:SetLabel("Enabled")
-    enabledCheckbox:SetValue(node.enabled)
-    enabledCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
-        node.enabled = value
-        runtimeNode.rootFrame:SetShown(value)
-    end)
-    metaGroup:AddChild(enabledCheckbox)
-    
-    -- --Frame-specific properties for each frame descriptor
-    -- for frameName, propertyFrame in pairs(runtimeNode.rootFrame.frames) do
-    --     local descriptor = propertyFrame.descriptor
-        
-    --     local frameGroup = AceGUI:Create("InlineGroup")
-    --     frameGroup:SetTitle(frameName .. " (" .. descriptor.type .. ")")
-    --     frameGroup:SetFullWidth(true)
-    --     frameGroup:SetLayout("Flow")
-    --     scroll:AddChild(frameGroup)
-        
-    --     -- Build type-specific property UI
-    --     if descriptor.type == FrameTypes.Icon then
-    --         NodesTab.BuildIconProperties(frameGroup, descriptor)
-    --     elseif descriptor.type == FrameTypes.Text then
-    --         NodesTab.BuildTextProperties(frameGroup, descriptor)
-    --     elseif descriptor.type == FrameTypes.Bar then
-    --         NodesTab.BuildBarProperties(frameGroup, descriptor)
-    --     end
-    -- end
-end
 
-function PropertiesPanel.BuildIconProperties(container, descriptor)
-    local props = descriptor.props
     
-    -- Icon texture
-    PropertiesPanel.BuildPropEditor(container, "Icon", props.icon, "string", function(value)
-        props.icon.value = value
-        NodesTab.UpdateFrames()
-    end)
-    
-    -- Color mask
-    PropertiesPanel.BuildColorEditor(container, "Color Mask", props.colorMask, function(r, g, b, a)
-        props.colorMask.value = {r=r, g=g, b=b, a=a}
-        NodesTab.UpdateFrames()
-    end)
-    
-    -- Cooldowns (if any)
-    if #props.cooldowns > 0 then
-        local cdGroup = AceGUI:Create("InlineGroup")
-        cdGroup:SetTitle("Cooldowns")
-        cdGroup:SetFullWidth(true)
-        cdGroup:SetLayout("Flow")
-        container:AddChild(cdGroup)
+    --Frame-specific properties for each frame descriptor
+    for frameName, propertyFrame in pairs(runtimeNode.rootFrame.frames) do
+        local descriptor = propertyFrame.descriptor
         
-        -- List each cooldown
-        for i, cd in ipairs(props.cooldowns) do
-            local label = AceGUI:Create("Heading")
-            label:SetText("Cooldown " .. i)
-            label:SetFullWidth(true)
-            cdGroup:AddChild(label)
-            
-            -- Cooldown properties...
+        local frameGroup = AceGUI:Create("InlineGroup")
+        frameGroup:SetTitle(frameName .. " (" .. descriptor.type .. ")")
+        frameGroup:SetFullWidth(true)
+        frameGroup:SetLayout("Flow")
+        scroll:AddChild(frameGroup)
+        
+        -- Build type-specific property UI
+        if descriptor.type == FrameTypes.Icon then
+            PropertiesPanel.BuildIconProperties(frameGroup, descriptor, runtimeNode)
+        -- elseif descriptor.type == FrameTypes.Text then
+        --     NodesTab.BuildTextProperties(frameGroup, descriptor)
+        -- elseif descriptor.type == FrameTypes.Bar then
+        --     NodesTab.BuildBarProperties(frameGroup, descriptor)
         end
     end
 end
 
-function PropertiesPanel.BuildTextProperties(container, descriptor)
+function PropertiesPanel.BuildIconProperties(container, descriptor, runtimeNode)
     local props = descriptor.props
     
-    -- Text content
-    NodesTab.BuildPropEditor(container, "Text", props.text, "string", function(value)
-        props.text.value = value
-        NodesTab.UpdateFrames()
-    end)
+    -- Color Mask
+    local colorGroup = AceGUI:Create("SimpleGroup")
+    colorGroup:SetFullWidth(true)
+    colorGroup:SetLayout("Flow")
+    container:AddChild(colorGroup)
     
-    -- Font size
-    NodesTab.BuildPropEditor(container, "Font Size", props.fontSize, "number", function(value)
-        props.fontSize.value = tonumber(value)
-        NodesTab.UpdateFrames()
-    end)
+    local colorHeading = AceGUI:Create("Label")
+    colorHeading:SetText("Color Mask")
+    colorHeading:SetFontObject(GameFontNormalLarge)
+    colorHeading:SetFullWidth(true)
+    colorGroup:AddChild(colorHeading)
     
-    -- Color
-    NodesTab.BuildColorEditor(container, "Color", props.color, function(r, g, b, a)
-        props.color.value = {r=r, g=g, b=b, a=a}
-        NodesTab.UpdateFrames()
+    -- Check if bound or static        
+    local color = props.colorMask.value or {r=1, g=1, b=1, a=1}
+    
+    local colorPicker = AceGUI:Create("ColorPicker")
+    colorPicker:SetColor(color.r, color.g, color.b, color.a)
+    colorPicker:SetHasAlpha(true)
+    colorPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b, a)
+        props.colorMask.value = { r=r, g=g, b=b, a=a}
     end)
-end
+    colorGroup:AddChild(colorPicker)
 
-function PropertiesPanel.BuildPropEditor(container, label, propDescriptor, valueType, onChanged)
-    -- Show resolve type toggle
-    if propDescriptor.allowedResolveTypes and #propDescriptor.allowedResolveTypes > 1 then
-        local dropdown = AceGUI:Create("Dropdown")
-        dropdown:SetLabel(label .. " (Mode)")
-        dropdown:SetList({static="Static", binding="Binding"})
-        dropdown:SetValue(propDescriptor.resolveType)
-        dropdown:SetFullWidth(true)
-        dropdown:SetCallback("OnValueChanged", function(widget, event, value)
-            propDescriptor.resolveType = value
-            NodesTab.RepaintInspector()
-        end)
-        container:AddChild(dropdown)
-    end
+    -- Icon Texture (with binding support)
+    local iconGroup = AceGUI:Create("SimpleGroup")
+    iconGroup:SetFullWidth(true)
+    iconGroup:SetLayout("Flow")
+    container:AddChild(iconGroup)
     
-    -- Show appropriate input based on resolve type
-    if propDescriptor.resolveType == "static" then
-        local input = AceGUI:Create("EditBox")
-        input:SetLabel(label)
-        input:SetText(tostring(propDescriptor.value))
-        input:SetFullWidth(true)
-        input:SetCallback("OnEnterPressed", function(widget, event, text)
-            onChanged(text)
+    local iconLabel = AceGUI:Create("Label")
+    iconLabel:SetText("Icon Texture")
+    iconLabel:SetFontObject(GameFontNormalLarge)
+    iconLabel:SetFullWidth(true)
+    iconGroup:AddChild(iconLabel)
+    
+    -- Resolve type dropdown (static vs binding)
+    local modeDropdown = AceGUI:Create("Dropdown")
+    modeDropdown:SetLabel("Source")
+    modeDropdown:SetList({static="Static", binding="Binding"})
+    modeDropdown:SetValue(props.icon.resolveType)
+    modeDropdown:SetRelativeWidth(0.5)
+    modeDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+        props.icon.resolveType = value
+        NodesTab.RepaintInspector()
+    end)
+    iconGroup:AddChild(modeDropdown)
+    
+    -- Show appropriate editor based on mode
+    if props.icon.resolveType == "static" then
+        if type(props.icon.value) == "table" then
+            props.icon.value = ""
+        end
+
+        -- Static: texture ID or path input
+        local textureInput = AceGUI:Create("EditBox")
+        textureInput:SetLabel("Texture ID or Path")
+        textureInput:SetText(tostring(props.icon.value))
+        textureInput:SetRelativeWidth(0.5)
+        textureInput:DisableButton(true)
+        textureInput:SetCallback("OnEnterPressed", function(widget, event, text)
+            props.icon.value = tonumber(text) or text
         end)
-        container:AddChild(input)
+        iconGroup:AddChild(textureInput)
+        
     else
-        -- Binding mode - show binding selector
-        local bindingLabel = AceGUI:Create("Label")
-        bindingLabel:SetText(label .. ": Bound to " .. (propDescriptor.value.binding or "none"))
-        bindingLabel:SetFullWidth(true)
-        container:AddChild(bindingLabel)
+        -- Binding: dropdown of available bindings
+        local bindingDropdown = AceGUI:Create("Dropdown")
+        bindingDropdown:SetLabel("Bind To")
+        
+        -- Build list from node's bindings
+        local bindingList = {}
+        for _, binding in ipairs(runtimeNode.node.bindings) do
+            bindingList[binding.alias] = binding.alias
+        end
+        
+        bindingDropdown:SetList(bindingList)
+        bindingDropdown:SetValue(props.icon.value.binding or "")
+        bindingDropdown:SetRelativeWidth(0.5)
+        bindingDropdown:SetCallback("OnValueChanged", function(widget, event, value) -- For the binding for icon we can always assume field is "icon"
+            props.icon.value = {binding = value, field = "icon"}
+        end)
+        iconGroup:AddChild(bindingDropdown)
     end
 end
