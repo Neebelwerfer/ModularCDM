@@ -1,10 +1,14 @@
+local _, ns = ...
 local AceGUI = LibStub("AceGUI-3.0")
 local AceHook = LibStub("AceHook-3.0")
+local RuntimeNodeManager = ns.Nodes.RuntimeNodeManager
+local DataTypes = ns.Core.DataTypes
 
-NodesTab = {
+local NodesTab = {
     nodes = {},
     selectedNodeGuid = nil,
 }
+ns.Editor.NodesTab = NodesTab
 
 function NodesTab.Build(container)
     NodesTab.container = container
@@ -32,7 +36,7 @@ function NodesTab.BuildTree()
     local addNode = {
         value = "add",
         text = "Add Node",
-        icon = AddSign,
+        icon = ns.AddSign,
     }
     table.insert(tree, addNode)
 
@@ -48,7 +52,7 @@ function NodesTab.BuildTreeNode(runtimeNode)
     
     -- Get icon from first binding or use question mark
     -- TODO: Node should store a seperate icon for the node itself
-    local icon = QuestionMark
+    local icon = ns.QuestionMark
     if node.bindings and #node.bindings > 0 then
         local firstBinding = node.bindings[1]
         if firstBinding.type == DataTypes.Spell then
@@ -135,11 +139,11 @@ function NodesTab.OnInspectorTabSelected(container, event, group)
     NodesTab.currentInspectorGroup = group
 
     if group == "properties" then
-        PropertiesPanel.Build(container)
+        ns.Editor.PropertiesPanel.Build(container)
     elseif group == "layout" then
-        LayoutPanel.Build(container)
+        ns.Editor.LayoutPanel.Build(container)
     elseif group == "bindings" then
-        BindingPanel.Build(container)
+        ns.Editor.BindingPanel.Build(container)
     end
 end
 

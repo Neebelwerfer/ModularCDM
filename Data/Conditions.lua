@@ -1,4 +1,7 @@
-Conditions = {}
+local addonName, ns = ...
+
+ns.Data.Conditions = {}
+local Conditions = ns.Data.Conditions
 
 ---@enum Conditions.RuleOperators
 Conditions.RuleOperators = {
@@ -78,8 +81,9 @@ function Conditions.Resolve(rule, node)
         end
     else
         -- Simple binding rule
-        local actualValue = BindingResolver.GetValue(rule.binding, rule.field, node)
-        return Conditions.CompareValues(actualValue, rule.operator, rule.value)
+        -- local actualValue = BindingResolver.GetValue(rule.binding, rule.field, node)
+        -- return Conditions.CompareValues(actualValue, rule.operator, rule.value)
+        return false
     end
 end
 

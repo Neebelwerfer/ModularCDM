@@ -1,7 +1,12 @@
-RuntimeNodeManager = {
+local _, ns = ...
+local RuntimeNode = ns.Nodes.RuntimeNode
+
+
+local RuntimeNodeManager = {
     roots = {},
     lookupTable = {}
 }
+ns.Nodes.RuntimeNodeManager = RuntimeNodeManager
 
 ---@param nodes table<string, Node>
 function RuntimeNodeManager.BuildAll(nodes)

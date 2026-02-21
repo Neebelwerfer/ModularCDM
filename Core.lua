@@ -1,50 +1,41 @@
-ModularCore = LibStub("AceAddon-3.0"):NewAddon("ModularCDM", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
-local addonName, env = ...
+local addonName, ns = ...
+
+ns.Core   = ns.Core   or {}
+ns.Data   = ns.Data   or {}
+ns.Nodes  = ns.Nodes  or {}
+ns.Frames = ns.Frames or {}
+ns.Editor = ns.Editor or {}
+
+ns.Core.ModularCore = LibStub("AceAddon-3.0"):NewAddon("ModularCDM", "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
+local ModularCore = ns.Core.ModularCore
+
 local AC = LibStub("AceConfig-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
 
 
-
-env.CdManagerCategories = {
+ns.CdManagerCategories = {
     Enum.CooldownViewerCategory.Essential,
     Enum.CooldownViewerCategory.Utility,
     Enum.CooldownViewerCategory.TrackedBar,
     Enum.CooldownViewerCategory.TrackedBuff
 }
 
-env.baseSize = 46
+ns.baseSize = 46
 
 
 
 local DirtyState = {spellID = {}, auraID = {}}
 
 function ModularCore:OnInitialize()
-	-- Called when the addon is loaded
-    -- local playerLoc = PlayerLocation:CreateFromUnit("player")
-    -- local _, _ , classId = C_PlayerInfo.GetClass(playerLoc)
-    -- ModularCore.classId = classId
-    
-    -- local currentSpecIndex = GetSpecialization()
-    -- if currentSpecIndex then
-    --     local id, currentSpecName =  GetSpecializationInfoForClassID(ModularCore.classId, currentSpecIndex)
-    --     ModularCore.specId = id
-    --     ModularCore.specName = currentSpecName
-    -- else
-    --     return
-    -- end
-    
-    
-	self.db = LibStub("AceDB-3.0"):New("ModularCDM_DB", self.defaults, true)
-    self.mainFrame = CreateFrame("Frame", addonName, UIParent)
+    local NodeFactory = ns.Nodes.NodeFactory
+    local FrameDescriptionFactory = ns.Frames.FrameDescriptionFactory
+    local PropertyFactory = ns.Frames.PropertyFactory
 
-    self.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
-    self.options.args.profiles.order = 999
+	self.db = LibStub("AceDB-3.0"):New("ModularCDM_DB", self.defaults, true)
     
-	AC:RegisterOptionsTable("ModularCDM_Options", self.options)
-	self.optionsFrame = ACD:AddToBlizOptions("ModularCDM_Options", "ModularCDM")
 	local profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 	AC:RegisterOptionsTable("ModularCDM_Profiles", profiles)
-	ACD:AddToBlizOptions("ModularCDM_Profiles", "Profiles", "ModularCDM")
+	ACD:AddToBlizOptions("ModularCDM_Profiles", "ModularCDM")
 
     self:RegisterChatCommand("ModularCDM", "SlashCommand")
     self:RegisterChatCommand("mcdm", "SlashCommand")
@@ -87,7 +78,7 @@ function ModularCore:OnInitialize()
 
     premeditationNode.bindings = {
         {
-            type = DataTypes.Aura,
+            type = ns.Core.DataTypes.Aura,
             alias = "Test Aura",
             key = 196912,
         }
@@ -145,13 +136,13 @@ function ModularCore:OnInitialize()
 
     shadowDanceNode.bindings = {
         {
-            type = DataTypes.Spell,
+            type = ns.Core.DataTypes.Spell,
             alias = "Test Spell",
             key = 185313
         }
     }
 
-    local testNode = NodeFactory.CreateIcon()
+    local testNode = ns.Nodes.NodeFactory.CreateIcon()
     assert(testNode.layout.dynamic)
     testNode.guid = "test-icon-010"
     testNode.layout.size.width = 48
@@ -162,7 +153,7 @@ function ModularCore:OnInitialize()
 
     testNode.bindings = {
         {
-            type = DataTypes.Spell,
+            type = ns.Core.DataTypes.Spell,
             alias = "Test Spell",
             key = 185313
         }
@@ -187,11 +178,11 @@ function ModularCore:OnInitialize()
     premeditationNode.parentGuid = dynamicGroup.guid
     testNode.parentGuid = dynamicGroup.guid
 
-    RuntimeNodeManager.BuildAll({[dynamicGroup.guid] = dynamicGroup, [premeditationNode.guid] = premeditationNode, [shadowDanceNode.guid] = shadowDanceNode, [testNode.guid] = testNode})
+    ns.Nodes.RuntimeNodeManager.BuildAll({[dynamicGroup.guid] = dynamicGroup, [premeditationNode.guid] = premeditationNode, [shadowDanceNode.guid] = shadowDanceNode, [testNode.guid] = testNode})
     self:ScheduleRepeatingTimer("Update", 0.2)
 
-    BlizzardCDMHandler.Initialize()
-    DataContext.Initialize()
+    ns.Core.BlizzardCDMHandler.Initialize()
+    ns.Data.DataContext.Initialize()
 end
 
 
@@ -218,11 +209,11 @@ function ModularCore:UpdateCharges(event)
 end
 
 function ModularCore:SlashCommand()
-    if EditorManager.IsOpen() then
-        EditorManager.Close()
+    if ns.Editor.EditorManager.IsOpen() then
+        ns.Editor.EditorManager.Close()
         return
     end
-    EditorManager.Open()
+    ns.Editor.EditorManager.Open()
 end
 
 function ModularCore:SpecChanged()
@@ -230,15 +221,7 @@ function ModularCore:SpecChanged()
 end
 
 function ModularCore:Update()
-    DataContext.UpdateContext()
+    ns.Data.DataContext.UpdateContext()
 
-    RuntimeNodeManager.UpdateNodes()
-end
-
-function ModularCore:OnEnable()
-    -- Called when the addon is enabled
-end
-
-function ModularCore:OnDisable()
-    -- Called when the addon is disabled
+    ns.Nodes.RuntimeNodeManager.UpdateNodes()
 end

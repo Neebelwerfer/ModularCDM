@@ -1,8 +1,10 @@
+local _, ns = ...
 local AceGUI = LibStub("AceGUI-3.0")
 
-EditorManager = {
+local EditorManager = {
     frame = nil,           -- Main AceGUI frame
 }
+ns.Editor.EditorManager = EditorManager
 
 local tabGroups = {
     nodes = "Nodes",
@@ -50,10 +52,10 @@ function EditorManager.OnTabSelected(container, event, group)
     container:ReleaseChildren()
     
     if group == tabGroups.nodes then
-        NodesTab.Build(container)
+        ns.Editor.NodesTab.Build(container)
     elseif group == tabGroups.BCDM then
-        CDMTab.Build(container)
+        ns.Editor.CDMTab.Build(container)
     elseif group == tabGroups.settings then
-        SettingsTab.Build(container)
+        ns.Editor.SettingsTab.Build(container)
     end
 end

@@ -1,4 +1,12 @@
-NodeFactory = {}
+local _, ns = ...
+
+local GroupAxis = ns.Core.GroupAxis
+local GroupAnchorMode = ns.Core.GroupAnchorMode
+local Node = ns.Nodes.Node
+local FrameDescriptionFactory = ns.Frames.FrameDescriptionFactory
+
+ns.Nodes.NodeFactory = {}
+local NodeFactory = ns.Nodes.NodeFactory
 
 -- Enum for template types
 ---@enum NodeFactory.TemplateTypes

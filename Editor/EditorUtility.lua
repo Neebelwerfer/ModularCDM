@@ -1,6 +1,10 @@
-local AceGUI = LibStub("AceGUI-3.0")
+local _, ns = ...
 
-EditorUtil = {}
+local AceGUI = LibStub("AceGUI-3.0")
+local DataTypes = ns.Core.DataTypes
+
+local EditorUtil = {}
+ns.Editor.EditorUtil = EditorUtil
 
 
 function EditorUtil.CreateDropdown(container, label, value, width, list, callback)

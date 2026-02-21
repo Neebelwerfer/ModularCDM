@@ -1,4 +1,10 @@
-PropertyFactory = {}
+local _, ns = ...
+
+local Color = ns.Core.Color
+
+ns.Frames.PropertyFactory = {}
+local PropertyFactory = ns.Frames.PropertyFactory
+
 ---@class CooldownDescriptor
 ---@field cooldown BoundPropDescriptor
 ---@field hideCountdown FlexiblePropDescriptor<boolean>

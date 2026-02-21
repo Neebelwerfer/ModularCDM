@@ -1,4 +1,9 @@
-FrameDescriptionFactory = {}
+local _, ns = ...
+
+local FrameDescriptionFactory = {}
+ns.Frames.FrameDescriptionFactory = FrameDescriptionFactory
+
+local PropertyFactory = ns.Frames.PropertyFactory
 
 ---@class ButtonAction
 ---@field type "spell" | "macro"

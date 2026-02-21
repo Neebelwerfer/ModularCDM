@@ -1,6 +1,10 @@
+local _, ns = ...
 local AceGUI = LibStub("AceGUI-3.0")
-CDMTab = {}
+local BlizzardCDMHandler = ns.Core.BlizzardCDMHandler
 
+
+local CDMTab = {}
+ns.Editor.CDMTab = CDMTab
 function CDMTab.Build(container)
 
     CDMTab.container = container

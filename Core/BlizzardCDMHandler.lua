@@ -1,11 +1,15 @@
----TODO: Revisit this whole file. I should fix the handling of frames to be less precarious
+local _, ns = ...
 
+---TODO: Revisit this whole file. I should fix the handling of frames to be less precarious
 local hook = LibStub("AceHook-3.0")
 
-BlizzardCDMHandler = {
+ns.Core.BlizzardCDMHandler = {
     initialized = false,
     options = nil
 }
+local BlizzardCDMHandler = ns.Core.BlizzardCDMHandler
+local ModularCore = ns.Core.ModularCore
+
 
 --- The blizzard CDM frames
 --- BuffIconCooldownViewer

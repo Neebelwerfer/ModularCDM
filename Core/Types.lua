@@ -1,3 +1,5 @@
+local _, ns = ...
+
 ---@class Color
 ---@field r number
 ---@field g number
@@ -10,7 +12,7 @@
 ---@param b number -- 0-1
 ---@param a? number -- 0-1
 ---@return Color
-function Color(r, g, b, a)
+function ns.Core.Color(r, g, b, a)
     return {
         r = r,
         g = g,
@@ -20,7 +22,7 @@ function Color(r, g, b, a)
 end
 
 ---@enum DataTypes
-DataTypes = {
+ns.Core.DataTypes = {
     Spell = 1,
     Item = 2,
     Aura = 3,
@@ -29,13 +31,13 @@ DataTypes = {
 }
 
 ---@enum GroupAxis
-GroupAxis = {
+ns.Core.GroupAxis = {
     Vertical = 1,
     Horizontal = 2
 }
 
 ---@enum GroupAnchorMode
-GroupAnchorMode = {
+ns.Core.GroupAnchorMode = {
     Leading = 1,
     Centered = 2,
     Trailing = 3

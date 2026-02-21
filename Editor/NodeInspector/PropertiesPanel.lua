@@ -1,7 +1,13 @@
+local _, ns = ...
 local AceGUI = LibStub("AceGUI-3.0")
-PropertiesPanel = {}
+local FrameTypes = ns.Core.FrameTypes
+local RuntimeNodeManager = ns.Nodes.RuntimeNodeManager
+
+local PropertiesPanel = {}
+ns.Editor.PropertiesPanel = PropertiesPanel
 
 function PropertiesPanel.Build(container)
+    local NodesTab = ns.Editor.NodesTab --TODO: Look at the dependency graph for this
     local runtimeNode = RuntimeNodeManager.lookupTable[NodesTab.selectedNodeGuid]
     assert(runtimeNode, "Tree nodes not matching runtime nodes")
     
@@ -53,6 +59,7 @@ function PropertiesPanel.Build(container)
 end
 
 function PropertiesPanel.BuildIconProperties(container, descriptor, runtimeNode)
+    local NodesTab = ns.Editor.NodesTab
     local props = descriptor.props
     
     -- Color Mask

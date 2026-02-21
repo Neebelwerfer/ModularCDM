@@ -1,5 +1,11 @@
-Node = {}
+local _, ns = ...
+
+local GroupAxis = ns.Core.GroupAxis
+local GroupAnchorMode = ns.Core.GroupAnchorMode
+
+local Node = {}
 Node.__index = Node
+ns.Nodes.Node = Node
 
 ---@return Transform
 local function DefaultTransform()
@@ -60,7 +66,7 @@ Node.NodeTypes = {
 ---@return Node
 function Node:New(overrides)
     local node = {
-        guid = GenerateGUID(),
+        guid = ns.Core.GenerateGUID(),
         transform = DefaultTransform(),
         parentGuid = nil,
         children = {},

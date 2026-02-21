@@ -1,3 +1,7 @@
+local _, ns = ...
+local DataTypes = ns.Core.DataTypes
+local Data = ns.Data
+
 ---@class DataContext
 ---@field spells table<number, SpellContext>
 ---@field auras table<number, AuraContext>
@@ -5,34 +9,31 @@
 ---@field resources table<string, ResourceContext>
 
 
-DataContext = {
-    dirty = { -- Tracks which parts of the context have changed
-        spells = {},
-        auras = {},
-        items = {},
-        resources = {}
-    },
-
-    bindings = {}, -- Tracks subscribers of each binding
-
-    updateInterval = 0.5,
-    lastUpdate = 0,
-
-    managers = {
-        [DataTypes.Spell] = SpellContextManager,
-        [DataTypes.Aura] = AuraContextManager
-    }
+ns.Data.DataContext = {}
+local DataContext = ns.Data.DataContext
+local dirty = {
+    spells = {},
+    auras = {},
+    items = {},
+    resources = {}
+}
+local bindings = {}
+local updateInterval = 0.5
+local lastUpdate = 0
+local managers = {
+    [DataTypes.Spell] = Data.SpellContextManager,
+    [DataTypes.Aura] = Data.AuraContextManager
 }
 
 function DataContext.Initialize()
-    AuraContextManager.Initialize()
+    Data.AuraContextManager.Initialize()
 end
 
 ---Register a binding from a node
 ---@param sourceGuid string
 ---@param binding BindingDescriptor
 function DataContext.RegisterBinding(sourceGuid, binding)
-    DataContext.managers[binding.type].Register(sourceGuid, binding.key)
+    managers[binding.type].Register(sourceGuid, binding.key)
 end
 
 
@@ -40,7 +41,7 @@ end
 ---@param sourceGuid string
 ---@param binding BindingDescriptor
 function DataContext.UnregisterBinding(sourceGuid, binding)
-    DataContext.managers[binding.type].Unregister(sourceGuid, binding.key)
+    managers[binding.type].Unregister(sourceGuid, binding.key)
 end
 
 ---comment
@@ -49,7 +50,7 @@ end
 ---@param field string
 ---@return any?
 function DataContext.ResolveBinding(type, key, field)
-    return DataContext.HandleNestedFields(DataContext.managers[type].contexts[key], field)
+    return DataContext.HandleNestedFields(managers[type].GetContext(key), field)
 end
 
 function DataContext.HandleNestedFields(context, field)
@@ -68,5 +69,5 @@ function DataContext.HandleNestedFields(context, field)
 end
 
 function DataContext.UpdateContext()
-    SpellContextManager.Update()
+    Data.SpellContextManager.Update()
 end

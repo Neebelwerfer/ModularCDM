@@ -1,6 +1,8 @@
+local _, ns = ...
 local AceGUI = LibStub("AceGUI-3.0")
 
-SettingsTab = {}
+local SettingsTab = {}
+ns.Editor.SettingsTab = SettingsTab
 
 function SettingsTab.Build(container)
     local label = AceGUI:Create("Label")

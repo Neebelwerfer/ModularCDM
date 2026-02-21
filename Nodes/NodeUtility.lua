@@ -1,4 +1,8 @@
-NodeUtility = {}
+local _, ns = ...
+
+ns.Nodes.NodeUtility = {}
+local NodeUtility = ns.Nodes.NodeUtility
+
 
 ---@param node Node
 ---@return string

@@ -1,3 +1,5 @@
+local _, ns = ...
+
 ---@class RuntimeNode
 ---@field node Node
 ---@field guid string
@@ -5,8 +7,13 @@
 ---@field rootFrame Frame
 ---@field parentRuntimeNode? RuntimeNode
 ---@field internalState table
-RuntimeNode = {}
+
+local RuntimeNode = {}
 RuntimeNode.__index = RuntimeNode
+ns.Nodes.RuntimeNode = RuntimeNode
+
+local Core = ns.Core
+local Data = ns.Data
 
 ---@param node Node
 ---@param parentRuntimeNode RuntimeNode?
@@ -25,7 +32,7 @@ function RuntimeNode:new(node, parentRuntimeNode)
     
     -- Register Bindings
     for _, binding in ipairs(node.bindings) do
-        DataContext.RegisterBinding(runtimeNode.guid, binding)
+        Data.DataContext.RegisterBinding(runtimeNode.guid, binding)
     end
     
     -- Determine parent frame
@@ -55,7 +62,7 @@ function RuntimeNode:Update()
     end
 
     for _, childGuid in pairs(self.node.children) do
-        local childRuntimeNode = RuntimeNodeManager.lookupTable[childGuid]
+        local childRuntimeNode = ns.Nodes.RuntimeNodeManager.lookupTable[childGuid] -- TODO: Should runtime node know about manager? Maybe manager handle this or we pass the lookupTable down
         childRuntimeNode:Update()
     end
 
@@ -72,7 +79,7 @@ function RuntimeNode:Destroy() --TODO: Should this cleanup children itself? I th
     self.rootFrame:Destroy() -- The root frame destroys itself and its children returning them to the frame pool
 
     for _, binding in ipairs(self.node.bindings) do
-        DataContext.UnregisterBinding(self.guid, binding)
+        Data.DataContext.UnregisterBinding(self.guid, binding)
     end
     if self.parentRuntimeNode then
         self.parentRuntimeNode:MarkLayoutAsDirty()
@@ -81,18 +88,18 @@ end
 
 function RuntimeNode:AddBinding(binding)
     table.insert(self.node.bindings, binding)
-    DataContext.RegisterBinding(self.node.guid, binding)
+    Data.DataContext.RegisterBinding(self.node.guid, binding)
 end
 
 function RuntimeNode:UpdateBinding(index, newBinding)
-    DataContext.UnregisterBinding(self.node.guid, self.node.bindings[index])
+    Data.DataContext.UnregisterBinding(self.node.guid, self.node.bindings[index])
     self.node.bindings[index] = newBinding
-    DataContext.RegisterBinding(self.node.guid, newBinding)
+    Data.DataContext.RegisterBinding(self.node.guid, newBinding)
 end
 
 function RuntimeNode:RemoveBinding(index)
     local binding = self.node.bindings[index]
-    DataContext.UnregisterBinding(self.node.guid, binding)
+    Data.DataContext.UnregisterBinding(self.node.guid, binding)
     table.remove(self.node.bindings, index)
 end
 
@@ -114,7 +121,7 @@ end
 function RuntimeNode:GetChildren(isVisibleOnly)
     local visibleChildren = {}
     for _, childGuid in pairs(self.node.children) do
-        local childRuntimeNode = RuntimeNodeManager.lookupTable[childGuid]
+        local childRuntimeNode = ns.Nodes.RuntimeNodeManager.lookupTable[childGuid] -- TODO: Another lookupTable reference!
         if not isVisibleOnly or childRuntimeNode.internalState.visible then
             table.insert(visibleChildren, childRuntimeNode)
         end
@@ -129,7 +136,7 @@ function RuntimeNode:ApplyDynamicLayout()
     local layout = self.node.layout.dynamic
     local anchorMode = self.node.layout.dynamic.anchorMode
     local spacing = self.node.layout.dynamic.spacing
-    local isHorizontal = layout.axis == GroupAxis.Horizontal
+    local isHorizontal = layout.axis == Core.GroupAxis.Horizontal
     
     --- Calculate Size
     local totalSize = 0
@@ -142,10 +149,10 @@ function RuntimeNode:ApplyDynamicLayout()
     local step = 1
     local centerOffset = 0
 
-    if anchorMode == GroupAnchorMode.Centered then
+    if anchorMode == Core.GroupAnchorMode.Centered then
         currentOffset = -totalSize / 2
         centerOffset = 0.5
-    elseif anchorMode == GroupAnchorMode.Trailing then
+    elseif anchorMode == Core.GroupAnchorMode.Trailing then
         step = -1
     end
 
@@ -202,7 +209,7 @@ function RuntimeNode:ResolveProp(prop)
             local binding = self:FindBinding(prop.value.binding)
             if binding then
                 local field = prop.value.field
-                local value = DataContext.ResolveBinding(binding.type, binding.key, field)
+                local value = Data.DataContext.ResolveBinding(binding.type, binding.key, field)
                 return value
             end
         end

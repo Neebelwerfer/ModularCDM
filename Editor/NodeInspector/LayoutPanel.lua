@@ -1,8 +1,16 @@
+local _, ns = ...
 local AceGUI = LibStub("AceGUI-3.0")
+local RuntimeNodeManager = ns.Nodes.RuntimeNodeManager
+local EditorUtil = ns.Editor.EditorUtil
+local GroupAxis = ns.Core.GroupAxis
+local GroupAnchorMode = ns.Core.GroupAnchorMode
 
-LayoutPanel = {}
+
+local LayoutPanel = {}
+ns.Editor.LayoutPanel = LayoutPanel
 
 function LayoutPanel.Build(container)
+    local NodesTab = ns.Editor.NodesTab
     local runtimeNode = RuntimeNodeManager.lookupTable[NodesTab.selectedNodeGuid]
     local node = runtimeNode.node
     local nodeLayout = node.layout

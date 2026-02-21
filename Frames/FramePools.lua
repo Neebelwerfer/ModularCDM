@@ -1,4 +1,7 @@
-FramePools = {}
+local _, ns = ...
+
+ns.Frames.FramePools = {}
+local FramePools = ns.Frames.FramePools
 
 --------------------------------------------
 --- Root

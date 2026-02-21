@@ -26,15 +26,9 @@ Libs\LibSharedMedia-3.0\lib.xml
 Libs\LibEQOL\LibEQOL.xml
 Libs\LibDeflate\lib.xml
 
-Utils.lua
-Types.lua
-Conditions.lua
-Nodes/include.xml
-Frames/include.xml
-Data/include.xml
 Core.lua
-BlizzardCDMHandler.lua
-Bindings.lua
-Options.lua
-Serializer.lua
+Core/include.xml
+Data/include.xml
+Frames/include.xml
+Nodes/include.xml
 Editor/include.xml

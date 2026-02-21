@@ -1,5 +1,8 @@
-PropertyFrame = {}
+local _, ns = ...
+
+local PropertyFrame = {}
 PropertyFrame.__index = PropertyFrame
+ns.Frames.PropertyFrame = PropertyFrame
 
 ---@class PropertyFrame
 ---@field frame Frame

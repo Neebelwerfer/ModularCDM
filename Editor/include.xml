@@ -1,8 +1,8 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlGUIS:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+    <Script file="EditorUtility.lua"/>
     <Script file="EditorManager.lua"/>
     <Include file="NodeInspector\include.xml"/>
     <Script file="NodesTab.lua"/>
     <Script file="CDMTab.lua"/>
     <Script file="SettingsTab.lua"/>
-    <Script file="EditorUtility.lua"/>
 </Ui>

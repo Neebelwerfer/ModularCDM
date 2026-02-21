@@ -1,6 +1,11 @@
+local _, ns = ...
 local AceGUI = LibStub("AceGUI-3.0")
-BindingPanel = {}
+local DataTypes = ns.Core.DataTypes
+local RuntimeNodeManager = ns.Nodes.RuntimeNodeManager
+local EditorUtil = ns.Editor.EditorUtil
 
+local BindingPanel = {}
+ns.Editor.BindingPanel = BindingPanel
 
 local DataTypeToString = {
     [DataTypes.Spell] = "Spell",
@@ -10,6 +15,7 @@ local DataTypeToString = {
 }
 
 function BindingPanel.Build(container)
+    local NodesTab = ns.Editor.NodesTab
     local runtimeNode = RuntimeNodeManager.lookupTable[NodesTab.selectedNodeGuid]
     local node = runtimeNode.node
     
@@ -92,6 +98,7 @@ end
 
 -- Binding Editor Dialog
 function BindingPanel.ShowBindingEditor(nodeGuid, bindingIndex)
+    local NodesTab = ns.Editor.NodesTab
     local runtimeNode = RuntimeNodeManager.lookupTable[nodeGuid]
     local node = runtimeNode.node
     if not node then return end

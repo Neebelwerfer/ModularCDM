@@ -1,3 +1,5 @@
+local _, ns = ...
+
 ---@class BindingValueDescriptor
 ---@field binding string
 ---@field field string
@@ -6,7 +8,9 @@
 ---@field type DataTypes -- What kind of game data (Spell, Item, Aura, Resource) 
 ---@field alias string -- User-friendly display name in editor
 ---@field key number | string Game ID (spellID: 12345, itemID: 67890, etc)
-BindingDescriptor = {}
+ns.Data.BindingDescriptor = {}
+local BindingDescriptor = ns.Data.BindingDescriptor
+
 
 
 
@@ -17,7 +21,7 @@ function BindingDescriptor.CreateValueDescriptor(binding, field)
     }
 end
 
-function BindingDescriptor.CreateBindingDescripor(type, alias, key)
+function BindingDescriptor.CreateBindingDescriptor(type, alias, key)
     return {
         type = type,
         alias = alias,

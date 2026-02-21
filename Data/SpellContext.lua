@@ -1,49 +1,53 @@
-SpellContextManager = {
-    contexts = {}, -- context registry
-    contextSubscriptions = {}, -- { [key] = { [guid] = true } }
+local _, ns = ...
 
-    initialized = false,
-}
+
+ns.Data.SpellContextManager = {}
+local SpellContextManager = ns.Data.SpellContextManager
+
+local contexts = {}
+local contextSubscriptions = {}
+local initialized = false
+
 
 function SpellContextManager.Initialize()
-    if SpellContextManager.initialized then
+    if initialized then
         return
     end
-    SpellContextManager.initialized = true
+    initialized = true
 end
 
 -- Registers a new context to the manager
 function SpellContextManager.Register(sourceGuid, key)
     -- If the context doesn't exist, create it
-    if not SpellContextManager.contextSubscriptions[key] then
-        SpellContextManager.contextSubscriptions[key] = {}
-        local context = SpellContext:new(key)
-        SpellContextManager.contexts[key] = context
+    if not contextSubscriptions[key] then
+        contextSubscriptions[key] = {}
+        local context = ns.Data.SpellContext:new(key)
+        contexts[key] = context
     end
     
-    assert(not SpellContextManager.contextSubscriptions[key][sourceGuid], "Registering an already registered context")
-    SpellContextManager.contextSubscriptions[key][sourceGuid] = true
+    assert(not contextSubscriptions[key][sourceGuid], "Registering an already registered context")
+    contextSubscriptions[key][sourceGuid] = true
 end
 
 -- Unregisters a context
 function SpellContextManager.Unregister(sourceGuid, key)
-    assert(SpellContextManager.contextSubscriptions[key][sourceGuid], "Unregistering an unregistered context")
-    SpellContextManager.contextSubscriptions[key][sourceGuid] = nil
+    assert(contextSubscriptions[key][sourceGuid], "Unregistering an unregistered context")
+    contextSubscriptions[key][sourceGuid] = nil
 
-    if not next(SpellContextManager.contextSubscriptions[key]) then
-        SpellContextManager.contextSubscriptions[key] = nil
-        SpellContextManager.contexts[key] = nil
+    if not next(contextSubscriptions[key]) then
+        contextSubscriptions[key] = nil
+        contexts[key] = nil
     end
 end
 
 -- Retrieves a context
 function SpellContextManager.GetContext(key)
-    return SpellContextManager.contexts[key]
+    return contexts[key]
 end
 
 -- Updates all contexts
 function SpellContextManager.Update()
-    for _, context in pairs(SpellContextManager.contexts) do
+    for _, context in pairs(contexts) do
         context:Update()
     end
 end
@@ -58,8 +62,10 @@ end
 ---@field usable boolean
 ---@field noMana boolean
 
-SpellContext = {}
+ns.Data.SpellContext = {}
+local SpellContext = ns.Data.SpellContext
 SpellContext.__index = SpellContext
+
 function SpellContext:new(key)
     local spellInfo = C_Spell.GetSpellInfo(key)
     local charges = C_Spell.GetSpellCharges(key)

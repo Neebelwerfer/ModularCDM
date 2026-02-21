@@ -46,6 +46,7 @@ Early phase - Just figuring out the structure and experimenting
 - [ ] Fixes
     - [ ] Layout: Anchor point seems to behaver weirdly
     - [x] Layout/Editor: Scroll frame not working properly
+    - [x] Fix Name space pollution. Move thing from being global to the addon namespace.
 
 ## The goal
 The goal of this project is to learn a bit about WoW Api and Data-driven design in terms of creating modular UI

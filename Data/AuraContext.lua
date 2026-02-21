@@ -2,18 +2,19 @@
 The Context for Auras act a little different compared to the other context since the data is going to be dependant on the blizzard CDM.
 Since the only way we can couple SpellID with auraInstanceID is through said frames, it is required by the user to add the buffs to the active part of the CDM to be registered.
 ]]
-AuraContextManager = {
-    contexts = {}, -- context registry
-    contextSubscriptions = {}, -- { [key] = { [guid] = true } }
-    
-    auraIDToFrame = {}, -- auraInstanceID -> frame
-    frameToContext = {}, -- frame -> context
-    initialized = false
-}
+local _, ns = ...
+ns.Data.AuraContextManager = {}
+local AuraContextManager = ns.Data.AuraContextManager
+
+local contexts = {}
+local contextSubscriptions = {}
+local auraIDToFrame = {}
+local frameToContext = {}
+local initialized = false
 
 -- Initializes the context manager and builds the CDM cache
 function AuraContextManager.Initialize()
-    if AuraContextManager.initialized then
+    if initialized then
         return
     end
     
@@ -27,42 +28,42 @@ function AuraContextManager.Initialize()
     
     hooksecurefunc(BuffIconCooldownViewer, "OnUnitAura", AuraContextManager.UpdateAuras)
     hooksecurefunc(BuffBarCooldownViewer, "OnUnitAura", AuraContextManager.UpdateAuras)
-    AuraContextManager.initialized = true
+    initialized = true
 end
 
 -- Registers a new context to the manager
 -- TODO: Handle the case where the context is already registered, and since we use names we should look what we do between handling SpellID vs Spell names; an aura could have multiple spellIDs connected!!!
 function AuraContextManager.Register(sourceGuid, key)
     -- If the context doesn't exist, create it
-    if not AuraContextManager.contextSubscriptions[key] then
-        AuraContextManager.contextSubscriptions[key] = {}
-        local context = AuraContext:new(key)
-        AuraContextManager.contexts[key] = context
+    if not contextSubscriptions[key] then
+        contextSubscriptions[key] = {}
+        local context = ns.Data.AuraContext:new(key)
+        contexts[key] = context
     end
     
-    assert(not AuraContextManager.contextSubscriptions[key][sourceGuid], "Registering an already registered context")
-    AuraContextManager.contextSubscriptions[key][sourceGuid] = true
+    assert(not contextSubscriptions[key][sourceGuid], "Registering an already registered context")
+    contextSubscriptions[key][sourceGuid] = true
 end
 
 -- Unregisters a context
 function AuraContextManager.Unregister(sourceGuid, key)
-    assert(AuraContextManager.contextSubscriptions[key][sourceGuid], "Unregistering an unregistered context")
-    AuraContextManager.contextSubscriptions[key][sourceGuid] = nil
+    assert(contextSubscriptions[key][sourceGuid], "Unregistering an unregistered context")
+    contextSubscriptions[key][sourceGuid] = nil
 
-    if not next(AuraContextManager.contextSubscriptions[key]) then
-        AuraContextManager.contextSubscriptions[key] = nil
-        AuraContextManager.contexts[key] = nil
+    if not next(contextSubscriptions[key]) then
+        contextSubscriptions[key] = nil
+        contexts[key] = nil
     end
 end
 
 -- Retrieves a context
 function AuraContextManager.GetContext(key)
-    return AuraContextManager.contexts[key]
+    return contexts[key]
 end
 
 -- Updates all contexts
 function AuraContextManager.Update()
-    for frame, context in pairs(AuraContextManager.frameToContext) do
+    for frame, context in pairs(frameToContext) do
         local auraInstanceID = frame:GetAuraSpellInstanceID()
         if auraInstanceID then
             context:Update(frame, auraInstanceID)
@@ -76,9 +77,9 @@ function AuraContextManager.Rebuild()
         return
     end
     
-    for key, _ in pairs(AuraContextManager.contexts) do
-        local new = AuraContext:new(key)
-        AuraContextManager.contexts[key] = new
+    for key, _ in pairs(contexts) do
+        local new = ns.Data.AuraContext:new(key)
+        contexts[key] = new
     end
 
     AuraContextManager.ConnectFramesToContexts()
@@ -110,19 +111,19 @@ function AuraContextManager.ConnectFramesToContexts()
     end
 
     local frameToContext = {}
-    for _,v in pairs(AuraContextManager.contexts) do
+    for _,v in pairs(contexts) do
         local frame = map[v.name]
         if frame then
             frameToContext[frame] = v
 
             local auraInstanceID = frame:GetAuraSpellInstanceID()
             if auraInstanceID then
-                AuraContextManager.auraIDToFrame[auraInstanceID] = frame
+                auraIDToFrame[auraInstanceID] = frame
                 v:Update(frame, auraInstanceID)
             end
         end
     end
-    AuraContextManager.frameToContext = frameToContext
+    frameToContext = frameToContext
 end
 
 ---Update loop called when BuffIconCooldownViewer & BuffBarCooldownViewer gets aura updated
@@ -142,11 +143,11 @@ function AuraContextManager.UpdateAuras(manager, unit, updateInfo)
             if frames and #frames > 0 then
                 if #frames > 1 then print("multiple frames!!") end -- Will probably not happen?
                 local frame = frames[1]
-                local context = AuraContextManager.frameToContext[frame]
+                local context = frameToContext[frame]
                 if context then
                     context:Update(frame, v.auraInstanceID, v)
                 end
-                AuraContextManager.auraIDToFrame[v.auraInstanceID] = frame
+                auraIDToFrame[v.auraInstanceID] = frame
             end
 		end
     end
@@ -154,9 +155,9 @@ function AuraContextManager.UpdateAuras(manager, unit, updateInfo)
     -- Update the specific contexts
 	if updateInfo.updatedAuraInstanceIDs then
 		for _, v in pairs(updateInfo.updatedAuraInstanceIDs) do
-            local frame = AuraContextManager.auraIDToFrame[v]
+            local frame = auraIDToFrame[v]
             if frame then
-                local context = AuraContextManager.frameToContext[frame]
+                local context = frameToContext[frame]
                 if context then
                     context:Update(frame, v)
                 end
@@ -167,14 +168,14 @@ function AuraContextManager.UpdateAuras(manager, unit, updateInfo)
     -- Remove the specific auraInstanceID mappings
 	if updateInfo.removedAuraInstanceIDs then
 		for _, v in pairs(updateInfo.removedAuraInstanceIDs) do
-            local frame = AuraContextManager.auraIDToFrame[v]
+            local frame = auraIDToFrame[v]
             if frame then
-                local context = AuraContextManager.frameToContext[frame]
+                local context = frameToContext[frame]
                 if context then
                     context:Update()
                 end
             end
-			AuraContextManager.auraIDToFrame[v] = nil
+			auraIDToFrame[v] = nil
 		end
 	end
 end
@@ -191,7 +192,8 @@ end
 ---@field duration { start: number, duration: number, modRate: number }
 ---@field remaining fun(): number
 
-AuraContext = {}
+ns.Data.AuraContext = {}
+local AuraContext = ns.Data.AuraContext
 AuraContext.__index = AuraContext
 
 function AuraContext:new(key)

@@ -1,3 +1,5 @@
+local _, ns = ...
+
 ---@class ItemContext
 ---@field id number
 ---@field name string
@@ -5,4 +7,4 @@
 ---@field count number
 ---@field cooldown? { start: number, duration: number, remaining: number }
 
-ItemContext = {}
+ns.Data.ItemContext = {}
