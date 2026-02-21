@@ -66,7 +66,7 @@ end
 local function BoundProp(defaultValue)
     return {
         resolveType = "binding",
-        value = defaultValue
+        value = {binding = "", field = ""}
     }
 end
 

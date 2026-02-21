@@ -1,6 +1,9 @@
 # A Cooldown manager for Wow
 Taking some inspiration from WAs but wanting to take a more constrained approach after WoWs big API changes
 
+## The goal
+The goal of this project is to learn a bit about WoW Api and Data-driven design in terms of creating modular UI
+
 ## Current State
 Early phase - Just figuring out the structure and experimenting
 
@@ -15,12 +18,13 @@ Early phase - Just figuring out the structure and experimenting
     - [ ] Wrapping
 - [ ] Add in game editor
     - [ ] Node list
+        - [ ] Node Creation
         - [x] Context Menu
         - [ ] Drag and Drop
         - [ ] Movable node when selected in the hierarchy
     - [ ] Property settings
         - [x] Icon
-        - [ ] Cooldown
+        - [x] Cooldown
         - [ ] Text
         - [ ] Bar
     - [x] Node layout settings
@@ -45,6 +49,3 @@ Early phase - Just figuring out the structure and experimenting
     - [ ] Add validation when adding bindings etc. 
 - [ ] Fixes
     - [ ] Layout: Anchor point seems to behaver weirdly
-
-## The goal
-The goal of this project is to learn a bit about WoW Api and Data-driven design in terms of creating modular UI

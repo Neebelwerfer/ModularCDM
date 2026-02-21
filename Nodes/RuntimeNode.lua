@@ -27,6 +27,7 @@ function RuntimeNode:new(node, parentRuntimeNode)
     runtimeNode.frames = {}
     runtimeNode.internalState = {
         dirtyLayout = true,
+        dirtyFrames = false,
         visible = true
     }
     
@@ -66,6 +67,11 @@ function RuntimeNode:Update()
         childRuntimeNode:Update()
     end
 
+    if self.internalState.dirtyFrames then
+        self:RebuildFrames()
+        self.internalState.dirtyFrames = false
+    end
+
     if self.internalState.dirtyLayout then
         self:UpdateTransforms()
         if self.node.layout.dynamic.enabled then
@@ -74,6 +80,18 @@ function RuntimeNode:Update()
         self.internalState.dirtyLayout = false
     end
 end
+
+function RuntimeNode:RebuildFrames()
+    self.rootFrame:Destroy()
+    self.rootFrame = FrameBuilder.BuildRootFrame(self.node, self.parentRuntimeNode and self.parentRuntimeNode.rootFrame or UIParent)
+
+    self:MarkLayoutAsDirty()
+end
+
+function RuntimeNode:MarkFramesAsDirty()
+    self.internalState.dirtyFrames = true
+end
+
 
 function RuntimeNode:Destroy() --TODO: Should this cleanup children itself? I think it should
     self.rootFrame:Destroy() -- The root frame destroys itself and its children returning them to the frame pool

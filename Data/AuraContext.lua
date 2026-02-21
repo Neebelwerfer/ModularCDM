@@ -115,7 +115,6 @@ function AuraContextManager.ConnectFramesToContexts()
         local frame = map[v.name]
         if frame then
             frameContextMap[frame] = v
-
             local auraInstanceID = frame:GetAuraSpellInstanceID()
             if auraInstanceID then
                 auraIDToFrame[auraInstanceID] = frame

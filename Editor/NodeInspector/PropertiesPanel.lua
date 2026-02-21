@@ -1,7 +1,10 @@
 local _, ns = ...
 local AceGUI = LibStub("AceGUI-3.0")
 local FrameTypes = ns.Frames.FrameTypes
+local DataTypes = ns.Core.DataTypes
 local RuntimeNodeManager = ns.Nodes.RuntimeNodeManager
+local PropertyFactory = ns.Frames.PropertyFactory
+
 
 local PropertiesPanel = {}
 ns.Editor.PropertiesPanel = PropertiesPanel
@@ -41,8 +44,19 @@ function PropertiesPanel.Build(container)
     for frameName, propertyFrame in pairs(runtimeNode.rootFrame.frames) do
         local descriptor = propertyFrame.descriptor
         
+        local frameType = nil
+        for k, v in pairs(FrameTypes) do
+            if v == descriptor.type then
+                frameType = k
+                break
+            end
+        end
+        if not frameType then
+            error("Unknown frame type: " .. descriptor.type)
+        end
+
         local frameGroup = AceGUI:Create("InlineGroup")
-        frameGroup:SetTitle(frameName .. " (" .. descriptor.type .. ")")
+        frameGroup:SetTitle(frameName .. " (" .. frameType .. ")")
         frameGroup:SetFullWidth(true)
         frameGroup:SetLayout("Flow")
         scroll:AddChild(frameGroup)
@@ -56,6 +70,7 @@ function PropertiesPanel.Build(container)
         --     NodesTab.BuildBarProperties(frameGroup, descriptor)
         end
     end
+    scroll:DoLayout()
 end
 
 function PropertiesPanel.BuildIconProperties(container, descriptor, runtimeNode)
@@ -68,11 +83,32 @@ function PropertiesPanel.BuildIconProperties(container, descriptor, runtimeNode)
     colorGroup:SetLayout("Flow")
     container:AddChild(colorGroup)
     
-    local colorHeading = AceGUI:Create("Label")
+    local colorHeading = AceGUI:Create("Heading")
     colorHeading:SetText("Color Mask")
-    colorHeading:SetFontObject(GameFontNormalLarge)
     colorHeading:SetFullWidth(true)
     colorGroup:AddChild(colorHeading)
+
+    -- local offsetX = AceGUI:Create("EditBox")
+    -- offsetX:SetLabel("Offset X")
+    -- offsetX:SetText(tostring(descriptor.transform.offsetX))
+    -- offsetX:SetRelativeWidth(0.5)
+    -- offsetX:DisableButton(true)
+    -- offsetX:SetCallback("OnEnterPressed", function(widget, event, text)
+    --     descriptor.transform.offsetX = tonumber(text)
+    --     runtimeNode:MarkFramesAsDirty()
+    -- end)
+    -- colorGroup:AddChild(offsetX)
+    
+    -- local offsetY = AceGUI:Create("EditBox")
+    -- offsetY:SetLabel("Offset Y")
+    -- offsetY:SetText(tostring(descriptor.transform.offsetY))
+    -- offsetY:SetRelativeWidth(0.5)
+    -- offsetY:DisableButton(true)
+    -- offsetY:SetCallback("OnEnterPressed", function(widget, event, text)
+    --     descriptor.transform.offsetY = tonumber(text)
+    --     runtimeNode:MarkFramesAsDirty()
+    -- end)
+    -- colorGroup:AddChild(offsetY)
     
     -- Check if bound or static        
     local color = props.colorMask.value or {r=1, g=1, b=1, a=1}
@@ -145,4 +181,184 @@ function PropertiesPanel.BuildIconProperties(container, descriptor, runtimeNode)
         end)
         iconGroup:AddChild(bindingDropdown)
     end
+
+    for i, cooldown in ipairs(props.cooldowns) do
+        PropertiesPanel.DrawCooldown(runtimeNode, container, cooldown, i)
+    end
+    local addCooldownFrame = AceGUI:Create("Button")
+    addCooldownFrame:SetText("Add Cooldown Frame")
+    addCooldownFrame:SetCallback("OnClick", function(widget, event, value)
+        table.insert(props.cooldowns, PropertyFactory.DefaultCooldownProperties())
+        runtimeNode:MarkFramesAsDirty()
+        ns.Editor.NodesTab.RepaintInspector()
+    end)
+    container:AddChild(addCooldownFrame)
+end
+
+function PropertiesPanel.DrawCooldown(runtimeNode,container, cooldown, i)
+    local cooldownGroup = AceGUI:Create("InlineGroup")
+    cooldownGroup:SetTitle("Cooldown Frame " .. i)
+    cooldownGroup:SetFullWidth(true)
+    cooldownGroup:SetLayout("Flow")
+    container:AddChild(cooldownGroup)
+
+        -- Cooldown Binding Section
+    local bindingHeading = AceGUI:Create("Heading")
+    bindingHeading:SetText("Cooldown Source")
+    bindingHeading:SetFullWidth(true)
+    cooldownGroup:AddChild(bindingHeading)
+    
+    -- Binding dropdown
+    local bindingDropdown = AceGUI:Create("Dropdown")
+    bindingDropdown:SetLabel("Bind To")
+    
+    local bindingList = {}
+    for _, binding in ipairs(runtimeNode.node.bindings) do
+        bindingList[binding.alias] = binding.alias
+    end
+    
+    bindingDropdown:SetList(bindingList)
+    bindingDropdown:SetValue(cooldown.cooldown.value.binding or "")
+    bindingDropdown:SetRelativeWidth(0.5)
+    bindingDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+        cooldown.cooldown.value.binding = value
+        ns.Editor.NodesTab.RepaintInspector()
+    end)
+    cooldownGroup:AddChild(bindingDropdown)
+    
+    -- Field dropdown (contextual based on binding type)
+    local fieldDropdown = AceGUI:Create("Dropdown")
+    fieldDropdown:SetLabel("Field")
+    
+    -- Determine available fields based on binding type
+    local fieldList = {}
+    if cooldown.cooldown.value.binding then
+        -- Find the binding to get its type
+        local binding = nil
+        for _, b in ipairs(runtimeNode.node.bindings) do
+            if b.alias == cooldown.cooldown.value.binding then
+                binding = b
+                break
+            end
+        end
+        
+        if binding then
+            if binding.type == DataTypes.Spell then
+                fieldList = {["cooldown"]="Cooldown", ["charges.cooldown"]="Charges"}
+            elseif binding.type == DataTypes.Aura then
+                fieldList = {["duration"]="Duration"}
+            end
+        end
+    end
+    
+    fieldDropdown:SetList(fieldList)
+    fieldDropdown:SetValue(cooldown.cooldown.value.field)
+    fieldDropdown:SetRelativeWidth(0.5)
+    fieldDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+        cooldown.cooldown.value.field = value
+    end)
+    cooldownGroup:AddChild(fieldDropdown)
+    
+    -- Visual settings heading
+    local visualHeading = AceGUI:Create("Heading")
+    visualHeading:SetText("Visual Settings")
+    visualHeading:SetFullWidth(true)
+    cooldownGroup:AddChild(visualHeading)
+
+    local hideCountdown = AceGUI:Create("CheckBox")
+    hideCountdown:SetLabel("Hide Countdown")
+    hideCountdown:SetValue(cooldown.hideCountdown.value)
+    hideCountdown:SetRelativeWidth(0.5)
+    hideCountdown:SetCallback("OnValueChanged", function(widget, event, value)
+        cooldown.hideCountdown.value = value
+    end)
+    cooldownGroup:AddChild(hideCountdown)
+
+    local reverse = AceGUI:Create("CheckBox")
+    reverse:SetLabel("Reverse")
+    reverse:SetValue(cooldown.reverse.value)
+    reverse:SetRelativeWidth(0.5)
+    reverse:SetCallback("OnValueChanged", function(widget, event, value)
+        cooldown.reverse.value = value
+    end)
+    cooldownGroup:AddChild(reverse)
+
+    local swipeHeading = AceGUI:Create("Heading")
+    swipeHeading:SetText("Swipe")
+    swipeHeading:SetFullWidth(true)
+    cooldownGroup:AddChild(swipeHeading)
+
+    local swipeEnabled = AceGUI:Create("CheckBox")
+    swipeEnabled:SetLabel("Swipe Enabled")
+    swipeEnabled:SetValue(cooldown.swipe.enabled.value)
+    swipeEnabled:SetRelativeWidth(0.5)
+    swipeEnabled:SetCallback("OnValueChanged", function(widget, event, value)
+        cooldown.swipe.enabled.value = value
+    end)
+    cooldownGroup:AddChild(swipeEnabled)
+
+    local swipeColor = AceGUI:Create("ColorPicker")
+    swipeColor:SetColor(cooldown.swipe.color.value.r, cooldown.swipe.color.value.g, cooldown.swipe.color.value.b, cooldown.swipe.color.value.a)
+    swipeColor:SetHasAlpha(true)
+    swipeColor:SetRelativeWidth(0.5)
+    swipeColor:SetCallback("OnValueChanged", function(widget, event, r, g, b, a)
+        cooldown.swipe.color.value = { r=r, g=g, b=b, a=a}
+    end)
+    cooldownGroup:AddChild(swipeColor)
+
+    local edgeHeading = AceGUI:Create("Heading")
+    edgeHeading:SetText("Edge")
+    edgeHeading:SetFullWidth(true)
+    cooldownGroup:AddChild(edgeHeading)
+
+    local edgeEnabled = AceGUI:Create("CheckBox")
+    edgeEnabled:SetLabel("Edge Enabled")
+    edgeEnabled:SetValue(cooldown.edge.enabled.value)
+    edgeEnabled:SetRelativeWidth(0.33)
+    edgeEnabled:SetCallback("OnValueChanged", function(widget, event, value)
+        cooldown.edge.enabled.value = value
+    end)
+    cooldownGroup:AddChild(edgeEnabled)
+
+    local edgeColor = AceGUI:Create("ColorPicker")
+    edgeColor:SetColor(cooldown.edge.color.value.r, cooldown.edge.color.value.g, cooldown.edge.color.value.b, cooldown.edge.color.value.a)
+    edgeColor:SetHasAlpha(true)
+    edgeColor:SetRelativeWidth(0.33)
+    edgeColor:SetCallback("OnValueChanged", function(widget, event, r, g, b, a)
+        cooldown.edge.color.value = { r=r, g=g, b=b, a=a}
+    end)
+    cooldownGroup:AddChild(edgeColor)
+
+    local edgeScale = AceGUI:Create("Slider")
+    edgeScale:SetLabel("Edge Scale")
+    edgeScale:SetValue(cooldown.edge.scale.value)
+    edgeScale:SetRelativeWidth(0.33)
+    edgeScale:SetCallback("OnValueChanged", function(widget, event, value)
+        cooldown.edge.scale.value = value
+    end)
+    cooldownGroup:AddChild(edgeScale)
+
+
+    local blingHeading = AceGUI:Create("Heading")
+    blingHeading:SetText("Bling")
+    blingHeading:SetFullWidth(true)
+    cooldownGroup:AddChild(blingHeading)
+
+    local blingEnabled = AceGUI:Create("CheckBox")
+    blingEnabled:SetLabel("Bling Enabled")
+    blingEnabled:SetValue(cooldown.bling.enabled.value)
+    blingEnabled:SetRelativeWidth(0.33)
+    blingEnabled:SetCallback("OnValueChanged", function(widget, event, value)
+        cooldown.bling.enabled.value = value
+    end)
+    cooldownGroup:AddChild(blingEnabled)
+
+    local blingColor = AceGUI:Create("ColorPicker")
+    blingColor:SetColor(cooldown.bling.color.value.r, cooldown.bling.color.value.g, cooldown.bling.color.value.b, cooldown.bling.color.value.a)
+    blingColor:SetHasAlpha(true)
+    blingColor:SetRelativeWidth(0.33)
+    blingColor:SetCallback("OnValueChanged", function(widget, event, r, g, b, a)
+        cooldown.bling.color.value = { r=r, g=g, b=b, a=a}
+    end)
+    cooldownGroup:AddChild(blingColor)
 end
