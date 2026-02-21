@@ -45,9 +45,6 @@ Early phase - Just figuring out the structure and experimenting
     - [ ] Add validation when adding bindings etc. 
 - [ ] Fixes
     - [ ] Layout: Anchor point seems to behaver weirdly
-    - [x] Layout/Editor: Scroll frame not working properly
-    - [ ] Aura: Auras seems to have stopped working?
-    - [x] Fix Name space pollution. Move thing from being global to the addon namespace.
 
 ## The goal
 The goal of this project is to learn a bit about WoW Api and Data-driven design in terms of creating modular UI

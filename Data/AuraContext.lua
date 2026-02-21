@@ -110,11 +110,11 @@ function AuraContextManager.ConnectFramesToContexts()
         end
     end
 
-    local frameToContext = {}
+    local frameContextMap = {}
     for _,v in pairs(contexts) do
         local frame = map[v.name]
         if frame then
-            frameToContext[frame] = v
+            frameContextMap[frame] = v
 
             local auraInstanceID = frame:GetAuraSpellInstanceID()
             if auraInstanceID then
@@ -123,7 +123,7 @@ function AuraContextManager.ConnectFramesToContexts()
             end
         end
     end
-    frameToContext = frameToContext
+    frameToContext = frameContextMap
 end
 
 ---Update loop called when BuffIconCooldownViewer & BuffBarCooldownViewer gets aura updated
@@ -141,7 +141,7 @@ function AuraContextManager.UpdateAuras(manager, unit, updateInfo)
 		for _, v in pairs(updateInfo.addedAuras) do
             local frames = BuffIconCooldownViewer.auraInstanceIDToItemFramesMap[v.auraInstanceID] or BuffBarCooldownViewer.auraInstanceIDToItemFramesMap[v.auraInstanceID]
             if frames and #frames > 0 then
-                if #frames > 1 then print("multiple frames!!") end -- Will probably not happen?
+                if #frames > 1 then print("multiple frames!!") end -- Will probably happen with multiple dots spells?
                 local frame = frames[1]
                 local context = frameToContext[frame]
                 if context then
