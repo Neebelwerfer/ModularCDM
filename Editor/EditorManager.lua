@@ -30,6 +30,7 @@ function EditorManager.Open()
     frame:SetLayout("Fill")
     frame:SetWidth(900)
     frame:SetHeight(600)
+    frame:SetCallback("OnClose", EditorManager.Close)
 
     -- Tab group for Hierarchy/Settings
     local tabGroup = AceGUI:Create("TabGroup")

@@ -24,7 +24,7 @@ local function SetHooks(buttons)
     end
 end
 
-
+local overlay = nil
 function NodesTab.Build(container)
     NodesTab.container = container
     container:SetLayout("Fill")
@@ -33,6 +33,14 @@ function NodesTab.Build(container)
     treeGroup:SetFullHeight(true)
     treeGroup:SetTree(NodesTab.BuildTree())
     treeGroup:SetCallback("OnGroupSelected", NodesTab.OnNodeSelected)
+
+    treeGroup:SetCallback("OnRelease", function(widget)
+        print("OnRelease")
+        if overlay then
+            overlay:Hide()
+        end
+    end)
+
     container:AddChild(treeGroup)
     NodesTab.treeGroup = treeGroup
     NodesTab.currentInspectorGroup = "properties"
@@ -119,6 +127,8 @@ function NodesTab.OnNodeSelected(container, event, path)
 
     local guid = path:match("([^\001]+)$")
     NodesTab.selectedNodeGuid = guid
+
+    NodesTab.OverlayNode(guid)
 
     container:SetLayout("Fill")
     local inspectorTabs = AceGUI:Create("TabGroup")
@@ -261,5 +271,76 @@ function NodesTab.RepaintTree()
     -- Reselect current node
     if NodesTab.selectedNodeGuid then
         NodesTab.treeGroup:SelectByPath(NodesTab.selectedNodeGuid)
+    end
+end
+
+function NodesTab.OverlayNode(guid)
+    local runtimeNode = RuntimeNodeManager.lookupTable[guid]
+    if not overlay then
+        overlay = CreateFrame("Frame", "NodeInspectorOverlay", UIParent)
+        overlay:SetFrameStrata("HIGH")
+        overlay:SetFrameLevel(1000)
+        overlay:EnableMouse(true)
+        overlay:SetMovable(true)
+        overlay:RegisterForDrag("LeftButton")
+        overlay.tex = overlay:CreateTexture(nil, "OVERLAY")
+        overlay.tex:SetAllPoints(overlay)
+        overlay.tex:SetColorTexture(0, 1, 0, 0.5)
+    end
+
+    overlay:SetParent(runtimeNode.rootFrame:GetParent())
+    overlay:SetPoint("CENTER", runtimeNode.rootFrame:GetParent(), "CENTER", runtimeNode.node.transform.offsetX, runtimeNode.node.transform.offsetY)
+    overlay:SetSize(runtimeNode.rootFrame:GetWidth(), runtimeNode.rootFrame:GetHeight())
+    overlay:SetScript("OnDragStart", function(self)
+        self:StartMoving()
+    end)
+    overlay:SetScript("OnReceiveDrag", function(self)
+        local point, _, relativePoint, x, y = self:GetPoint()
+        local offsetX, offsetY = NodesTab.ConvertToCenterAnchor(self, point, self:GetParent(), relativePoint, x, y)
+        print("X: " .. math.floor(offsetX + 0.5) .. " Y: " .. math.floor(offsetY + 0.5), point, relativePoint)
+    end)
+    overlay:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        local point, _, relativePoint, x, y = self:GetPoint()
+        local offsetX, offsetY = NodesTab.ConvertToCenterAnchor(self, point, self:GetParent(), relativePoint, x, y)
+        print("X: " .. math.floor(offsetX + 0.5) .. " Y: " .. math.floor(offsetY + 0.5), point, relativePoint)
+
+        runtimeNode.node.transform.offsetX = math.floor(offsetX + 0.5)
+        runtimeNode.node.transform.offsetY = math.floor(offsetY + 0.5)
+
+        runtimeNode:MarkLayoutAsDirty()
+    end)
+    overlay:Show()
+end
+
+--TODO: Might break if relative point is not center
+function NodesTab.ConvertToCenterAnchor(frame, point, relativeFrame, relPoint, x, y)
+    local width, height = UIParent:GetSize()
+    local frameWidth, frameHeight = frame:GetSize()
+
+    width = width/2 - frameWidth/2
+    height = height/2 - frameHeight/2
+    
+    -- Offset adjustments for each anchor point
+    local offsets = {
+        TOPLEFT = {-width, height},
+        TOP = {0, height},
+        TOPRIGHT = {width, height},
+        LEFT = {-width, 0},
+        CENTER = {0, 0},
+        RIGHT = {width, 0},
+        BOTTOMLEFT = {-width, -height},
+        BOTTOM = {0, -height},
+        BOTTOMRIGHT = {-width, -height}
+    }
+    
+    local offset = offsets[point] or {0, 0}
+    return x + offset[1], y + offset[2]
+end
+
+
+function NodesTab.HideOverlayNode()
+    if overlay then
+        overlay:Hide()
     end
 end

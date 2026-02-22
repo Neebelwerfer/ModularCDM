@@ -21,7 +21,7 @@ Pre-alpha. The general structure of the project is currently set and its now pos
         - [x] Node Creation
         - [x] Context Menu
         - [ ] Drag and Drop in hierarchy to add as a child to another node
-        - [ ] Movable node when selected in the hierarchy
+        - [x] Movable node when selected in the hierarchy
     - [ ] Property settings
         - [x] Icon
         - [x] Cooldown
