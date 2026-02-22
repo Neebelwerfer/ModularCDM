@@ -1,5 +1,6 @@
 local _, ns = ...
 local RuntimeNode = ns.Nodes.RuntimeNode
+local NodeDatabase = ns.Nodes.NodeDatabase
 
 
 local RuntimeNodeManager = {
@@ -8,10 +9,15 @@ local RuntimeNodeManager = {
 }
 ns.Nodes.RuntimeNodeManager = RuntimeNodeManager
 
----@param nodes table<string, Node>
-function RuntimeNodeManager.BuildAll(nodes)
+function RuntimeNodeManager.BuildAll()
+    local nodes = NodeDatabase:GetNodes()
+
     RuntimeNodeManager.roots = {}
     RuntimeNodeManager.lookupTable = {}
+    if nodes == nil then
+        return
+    end
+
 
     for _, node in pairs(nodes) do
         if node.parentGuid == nil then
@@ -46,6 +52,9 @@ end
 ---comment
 ---@param node Node
 function RuntimeNodeManager.AddNewNode(node)
+    assert(not RuntimeNodeManager.lookupTable[node.guid], "Node already exists")
+    NodeDatabase:AddNode(node)
+
     RuntimeNodeManager.lookupTable[node.guid] = RuntimeNodeManager.BuildRuntimeNode(ns.Data.Nodes, node)
     table.insert(RuntimeNodeManager.roots, RuntimeNodeManager.lookupTable[node.guid])
 end

@@ -35,7 +35,7 @@ function PropertiesPanel.Build(container)
     nameInput:SetFullWidth(true)
     nameInput:SetCallback("OnEnterPressed", function(widget, event, text)
         node.name = text
-        NodesTab.Repaint()
+        NodesTab.RepaintTree()
     end)
     metaGroup:AddChild(nameInput)
 

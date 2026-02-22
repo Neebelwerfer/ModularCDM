@@ -2,6 +2,7 @@
     <Script file="NodeUtility.lua"/>
     <Script file="Node.lua"/>
     <Script file="NodeFactory.lua"/>
+    <Script file="NodeDatabase.lua"/>
     <Script file="RuntimeNode.lua"/>
     <Script file="RuntimeNodeManager.lua"/>
 </Ui>

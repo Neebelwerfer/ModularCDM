@@ -4,6 +4,7 @@ local AceHook = LibStub("AceHook-3.0")
 local RuntimeNodeManager = ns.Nodes.RuntimeNodeManager
 local DataTypes = ns.Core.DataTypes
 local NodeFactory = ns.Nodes.NodeFactory
+local Components = ns.Editor.Components
 
 local NodesTab = {
     nodes = {},
@@ -156,31 +157,17 @@ function NodesTab.OnInspectorTabSelected(container, event, group)
 end
 
 
-local function AddButton(container, NodeType, Text, relativeSize)
-    local group = AceGUI:Create("SimpleGroup")
-    group:SetFullHeight(true)
-    group:SetFullWidth(true)
-    group:SetLayout("Flow")
-    container:AddChild(group)
-
-    local padGroup = AceGUI:Create("SimpleGroup")
-    padGroup:SetLayout("Fill")
-    padGroup:SetFullHeight(true)
-    padGroup:SetRelativeWidth(0.5 - (relativeSize / 2))
-    group:AddChild(padGroup)
-
-    local addIconButton = AceGUI:Create("Button")
-    addIconButton:SetText("Add " .. Text .. " Node")
-    addIconButton:SetRelativeWidth(relativeSize)
-    addIconButton:SetCallback("OnClick", function()
-        print("Add " .. NodeType)
-        local newNode = NodeFactory.Create(NodeType)
-        RuntimeNodeManager.AddNewNode(newNode)
-        NodesTab.Repaint()
+local function NodeAddButton(container, NodeType, Text, relativeSize)
+    local button = Components.PaddedButton(container, 0.5 - relativeSize / 2, 0)
+    button:SetText("Add " .. Text)
+    button:SetCallback("OnClick", function(widget, event)
+        local node = NodeFactory.Create(NodeType)
+        RuntimeNodeManager.AddNewNode(node)
+        NodesTab.RepaintTree()
     end)
-    group:AddChild(addIconButton)
+    button:SetRelativeWidth(relativeSize)
+    return button
 end
-
 
 function NodesTab.DrawAddPanel(container)
     local templateTypes = NodeFactory.TemplateTypes
@@ -190,10 +177,10 @@ function NodesTab.DrawAddPanel(container)
     group:SetLayout("List")
     container:AddChild(group)
 
-    AddButton(group, templateTypes.Icon, "Icon", 0.2)
-    AddButton(group, templateTypes.Text, "Text", 0.2)
-    AddButton(group, templateTypes.Empty, "Group", 0.2)
-    AddButton(group, templateTypes.DynamicGroup, "Dynamic Group", 0.2)
+    NodeAddButton(group, templateTypes.Icon, "Icon", 0.2)
+    NodeAddButton(group, templateTypes.Text, "Text", 0.2)
+    NodeAddButton(group, templateTypes.Empty, "Group", 0.2)
+    NodeAddButton(group, templateTypes.DynamicGroup, "Dynamic Group", 0.2)
 end
 
 --------------------------------------------

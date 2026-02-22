@@ -5,7 +5,7 @@ Taking some inspiration from WAs but wanting to take a more constrained approach
 The goal of this project is to learn a bit about WoW Api and Data-driven design in terms of creating modular UI
 
 ## Current State
-Early phase - Just figuring out the structure and experimenting
+Pre-alpha. The general structure of the project is currently set and its now possible to create a node and modify it.
 
 ### Current tasks:
 - [ ] Add tracking 
@@ -18,9 +18,9 @@ Early phase - Just figuring out the structure and experimenting
     - [ ] Wrapping
 - [ ] Add in game editor
     - [ ] Node list
-        - [ ] Node Creation
+        - [x] Node Creation
         - [x] Context Menu
-        - [ ] Drag and Drop
+        - [ ] Drag and Drop in hierarchy to add as a child to another node
         - [ ] Movable node when selected in the hierarchy
     - [ ] Property settings
         - [x] Icon
@@ -39,10 +39,10 @@ Early phase - Just figuring out the structure and experimenting
 - [ ] Refactor
     - [ ] Move frame offset from layout to properties so it fits better with the system
     - [ ] Split the frame update functions into multiple functions, one for each property
-    - [ ] Make sure we dont update static properties since they never change
+        - [ ] Make sure we dont update static properties since they never change
     - [ ] Remake the whole Blizzard Manager integration and aura and blizzard manager hooks to be more stable
     - [ ] Make dynamic group actually change layout settings for children so it wont get awkward later
     - [ ] Add validation when adding bindings etc. 
-    - [x] Add templating for text
+    - [ ] Build components to make Editor UI easier to build and modify
 - [ ] Fixes
     - [ ] Layout: Anchor point seems to behaver weirdly
