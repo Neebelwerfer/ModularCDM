@@ -61,8 +61,7 @@ function ModularCore:OnInitialize()
     iconDescriptor.props.icon.value = {binding = "Test Aura", field = "icon"}
 
     local textDescriptor = FrameDescriptionFactory.CreateTextFrame()
-    textDescriptor.props.text.resolveType = "binding"
-    textDescriptor.props.text.value = {binding = "Test Aura", field = "stacks"}
+    textDescriptor.props.text.value = "{Test Aura:stacks}"
     textDescriptor.transform.offsetX = 13
     textDescriptor.transform.offsetY = -13
     textDescriptor.props.fontSize.value = 15
@@ -105,8 +104,7 @@ function ModularCore:OnInitialize()
     iconDescriptor.props.icon.value = {binding = "Test Spell", field = "icon"}
 
     local textDescriptor = FrameDescriptionFactory.CreateTextFrame()
-    textDescriptor.props.text.resolveType = "binding"
-    textDescriptor.props.text.value = {binding = "Test Spell", field = "charges.current"}
+    textDescriptor.props.text.value = "{Test Spell:charges.current}"
     textDescriptor.transform.offsetX = 13
     textDescriptor.transform.offsetY = -13
     textDescriptor.props.fontSize.value = 15

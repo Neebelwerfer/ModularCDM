@@ -25,7 +25,7 @@ Early phase - Just figuring out the structure and experimenting
     - [ ] Property settings
         - [x] Icon
         - [x] Cooldown
-        - [ ] Text
+        - [x] Text
         - [ ] Bar
     - [x] Node layout settings
         - [x] Basic layout settings
@@ -47,5 +47,6 @@ Early phase - Just figuring out the structure and experimenting
     - [ ] Remake the whole Blizzard Manager integration and aura and blizzard manager hooks to be more stable
     - [ ] Make dynamic group actually change layout settings for children so it wont get awkward later
     - [ ] Add validation when adding bindings etc. 
+    - [x] Add templating for text
 - [ ] Fixes
     - [ ] Layout: Anchor point seems to behaver weirdly

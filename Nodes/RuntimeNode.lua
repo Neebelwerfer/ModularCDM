@@ -222,7 +222,7 @@ function RuntimeNode:ResolveProp(prop)
     -- Handle prop descriptors
     if prop.resolveType == "static" then
         return prop.value
-    elseif prop.resolveType == "binding" or prop.resolveType == "template" then
+    elseif prop.resolveType == "binding" then
         if prop.value then
             local binding = self:FindBinding(prop.value.binding)
             if binding then
@@ -232,6 +232,24 @@ function RuntimeNode:ResolveProp(prop)
             end
         end
         return nil
+    elseif prop.resolveType == "template" then
+        local bindings = {}
+        -- find bindings from the template indicated by {binding:field}
+        for alias, field in string.gmatch(prop.value, "{(.+):(.+)}") do
+            local binding = self:FindBinding(alias)
+            if binding then
+                if not bindings[alias..":"..field] then
+                    bindings[alias..":"..field] = Data.DataContext.ResolveBinding(binding.type, binding.key, field)
+                end
+            end
+        end
+
+        local text = prop.value
+        for key, value in pairs(bindings) do
+            text = string.gsub(text, "{"..key.."}", value)
+        end
+        
+        return text
     end
     
     -- Handle nested objects (like CooldownDescriptor)

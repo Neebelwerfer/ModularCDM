@@ -64,10 +64,10 @@ function PropertiesPanel.Build(container)
         -- Build type-specific property UI
         if descriptor.type == FrameTypes.Icon then
             PropertiesPanel.BuildIconProperties(frameGroup, descriptor, runtimeNode)
-        -- elseif descriptor.type == FrameTypes.Text then
-        --     NodesTab.BuildTextProperties(frameGroup, descriptor)
-        -- elseif descriptor.type == FrameTypes.Bar then
-        --     NodesTab.BuildBarProperties(frameGroup, descriptor)
+        elseif descriptor.type == FrameTypes.Text then
+            PropertiesPanel.BuildTextProperties(frameGroup, descriptor, runtimeNode)
+        elseif descriptor.type == FrameTypes.Bar then
+            PropertiesPanel.BuildBarProperties(frameGroup, descriptor, runtimeNode)
         end
     end
     scroll:DoLayout()
@@ -87,28 +87,6 @@ function PropertiesPanel.BuildIconProperties(container, descriptor, runtimeNode)
     colorHeading:SetText("Color Mask")
     colorHeading:SetFullWidth(true)
     colorGroup:AddChild(colorHeading)
-
-    -- local offsetX = AceGUI:Create("EditBox")
-    -- offsetX:SetLabel("Offset X")
-    -- offsetX:SetText(tostring(descriptor.transform.offsetX))
-    -- offsetX:SetRelativeWidth(0.5)
-    -- offsetX:DisableButton(true)
-    -- offsetX:SetCallback("OnEnterPressed", function(widget, event, text)
-    --     descriptor.transform.offsetX = tonumber(text)
-    --     runtimeNode:MarkFramesAsDirty()
-    -- end)
-    -- colorGroup:AddChild(offsetX)
-    
-    -- local offsetY = AceGUI:Create("EditBox")
-    -- offsetY:SetLabel("Offset Y")
-    -- offsetY:SetText(tostring(descriptor.transform.offsetY))
-    -- offsetY:SetRelativeWidth(0.5)
-    -- offsetY:DisableButton(true)
-    -- offsetY:SetCallback("OnEnterPressed", function(widget, event, text)
-    --     descriptor.transform.offsetY = tonumber(text)
-    --     runtimeNode:MarkFramesAsDirty()
-    -- end)
-    -- colorGroup:AddChild(offsetY)
     
     -- Check if bound or static        
     local color = props.colorMask.value or {r=1, g=1, b=1, a=1}
@@ -361,4 +339,36 @@ function PropertiesPanel.DrawCooldown(runtimeNode,container, cooldown, i)
         cooldown.bling.color.value = { r=r, g=g, b=b, a=a}
     end)
     cooldownGroup:AddChild(blingColor)
+end
+
+function PropertiesPanel.BuildTextProperties(container, descriptor, runtimeNode)
+    local props = descriptor.props
+
+    local fontSize = AceGUI:Create("Slider")
+    fontSize:SetLabel("Font Size")
+    fontSize:SetValue(props.fontSize.value)
+    fontSize:SetSliderValues(8, 24, 1)
+    fontSize:SetCallback("OnValueChanged", function(widget, event, value)
+        props.fontSize.value = value
+    end)
+    container:AddChild(fontSize)
+
+    local fontColor = AceGUI:Create("ColorPicker")
+    fontColor:SetColor(props.color.value.r, props.color.value.g, props.color.value.b, props.color.value.a)
+    fontColor:SetHasAlpha(true)
+    fontColor:SetCallback("OnValueChanged", function(widget, event, r, g, b, a)
+        props.color.value = { r=r, g=g, b=b, a=a}
+    end)
+    container:AddChild(fontColor)
+
+
+    local text = AceGUI:Create("EditBox")
+    text:SetText(props.text.value)
+    text:SetCallback("OnEnterPressed", function(widget, event, value)
+        props.text.value = value
+    end)
+    container:AddChild(text)
+end
+
+function PropertiesPanel.BuildBarProperties(container, descriptor, runtimeNode)
 end
