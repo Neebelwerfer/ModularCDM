@@ -103,12 +103,12 @@ function SpellContext:new(key)
     end
 
     context.cooldown.remaining = function()
-        if not self.internal.cooldownDurationUtil then return 0 end
-        return self.internal.cooldownDurationUtil:GetRemainingDuration(Enum.DurationTimeModifier.RealTime) or 0
+        if not context.internal.cooldownDurationUtil then return 0 end
+        return context.internal.cooldownDurationUtil:GetRemainingDuration(Enum.DurationTimeModifier.RealTime) or 0
     end
 
     context.cooldown.isActive = function()
-        return self.internal.cooldown and not self.internal.cooldown.durationUtil:IsZero()
+        return context.internal.cooldown and not context.internal.cooldown.durationUtil:IsZero()
     end
 
     setmetatable(context, self)

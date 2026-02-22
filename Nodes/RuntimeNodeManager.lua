@@ -43,6 +43,13 @@ function RuntimeNodeManager.UpdateNodes()
     end
 end
 
+---comment
+---@param node Node
+function RuntimeNodeManager.AddNewNode(node)
+    RuntimeNodeManager.lookupTable[node.guid] = RuntimeNodeManager.BuildRuntimeNode(ns.Data.Nodes, node)
+    table.insert(RuntimeNodeManager.roots, RuntimeNodeManager.lookupTable[node.guid])
+end
+
 ---Remove a node and all the child nodes
 ---@param guid string
 function RuntimeNodeManager.RemoveNode(guid)

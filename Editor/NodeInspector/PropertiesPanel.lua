@@ -150,6 +150,11 @@ function PropertiesPanel.BuildIconProperties(container, descriptor, runtimeNode)
     modeDropdown:SetRelativeWidth(0.5)
     modeDropdown:SetCallback("OnValueChanged", function(widget, event, value)
         props.icon.resolveType = value
+        if value == "static" then
+            props.icon.value = ""
+        else 
+            props.icon.value = { binding = "", field = "" }
+        end
         NodesTab.RepaintInspector()
     end)
     iconGroup:AddChild(modeDropdown)
@@ -398,7 +403,7 @@ function PropertiesPanel.BuildTextProperties(container, descriptor, runtimeNode)
     offsetY:SetCallback("OnEnterPressed", function(widget, event, value)
         value = tonumber(value)
         if value then
-            transform.offsetX = tonumber(value)
+            transform.offsetY = tonumber(value)
             runtimeNode:MarkLayoutAsDirty()
         else
             widget:SetText(transform.offsetY)

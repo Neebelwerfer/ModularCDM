@@ -3,12 +3,26 @@ local AceGUI = LibStub("AceGUI-3.0")
 local AceHook = LibStub("AceHook-3.0")
 local RuntimeNodeManager = ns.Nodes.RuntimeNodeManager
 local DataTypes = ns.Core.DataTypes
+local NodeFactory = ns.Nodes.NodeFactory
 
 local NodesTab = {
     nodes = {},
     selectedNodeGuid = nil,
 }
 ns.Editor.NodesTab = NodesTab
+
+local function SetHooks(buttons)
+    for _, button in ipairs(buttons) do --TODO: Make it not hook on addNode, also is this the best way to do this?
+        if not AceHook:IsHooked(button, "OnClick") and button.value ~= "add" then
+            AceHook:HookScript(button, "OnClick", function(frame, mouseButton)
+                if mouseButton == "RightButton" then
+                    NodesTab.OpenContextMenu(frame, frame.value)
+                end
+            end)
+        end
+    end
+end
+
 
 function NodesTab.Build(container)
     NodesTab.container = container
@@ -21,6 +35,8 @@ function NodesTab.Build(container)
     container:AddChild(treeGroup)
     NodesTab.treeGroup = treeGroup
     NodesTab.currentInspectorGroup = "properties"
+
+    SetHooks(treeGroup.buttons)
     
     -- Select first node
     if not NodesTab.selectedNodeGuid and #RuntimeNodeManager.roots > 0 then
@@ -90,20 +106,12 @@ end
 --TODO: Dont rebuild Inspector every time
 function NodesTab.OnNodeSelected(container, event, path)
     -- Extract GUID from path (last segment after \001)
-    for _, button in ipairs(NodesTab.treeGroup.buttons) do --TODO: Make it not hook on addNode, also is this the best way to do this?
-        if not AceHook:IsHooked(button, "OnClick") and button.value ~= "add" then
-            AceHook:HookScript(button, "OnClick", function(frame, mouseButton)
-                if mouseButton == "RightButton" then
-                    NodesTab.OpenContextMenu(frame, frame.value)
-                end
-            end)
-        end
-    end
+    SetHooks(NodesTab.treeGroup.buttons)
     
     NodesTab.inspectorTabs = nil
     container:ReleaseChildren()
     if path == "add" then
-        print("Add Node") -- TODO: Use container to show add templates.
+        NodesTab.DrawAddPanel(container)
         return
     end
 
@@ -147,6 +155,47 @@ function NodesTab.OnInspectorTabSelected(container, event, group)
     end
 end
 
+
+local function AddButton(container, NodeType, Text, relativeSize)
+    local group = AceGUI:Create("SimpleGroup")
+    group:SetFullHeight(true)
+    group:SetFullWidth(true)
+    group:SetLayout("Flow")
+    container:AddChild(group)
+
+    local padGroup = AceGUI:Create("SimpleGroup")
+    padGroup:SetLayout("Fill")
+    padGroup:SetFullHeight(true)
+    padGroup:SetRelativeWidth(0.5 - (relativeSize / 2))
+    group:AddChild(padGroup)
+
+    local addIconButton = AceGUI:Create("Button")
+    addIconButton:SetText("Add " .. Text .. " Node")
+    addIconButton:SetRelativeWidth(relativeSize)
+    addIconButton:SetCallback("OnClick", function()
+        print("Add " .. NodeType)
+        local newNode = NodeFactory.Create(NodeType)
+        RuntimeNodeManager.AddNewNode(newNode)
+        NodesTab.Repaint()
+    end)
+    group:AddChild(addIconButton)
+end
+
+
+function NodesTab.DrawAddPanel(container)
+    local templateTypes = NodeFactory.TemplateTypes
+    local group = AceGUI:Create("SimpleGroup")
+    group:SetFullHeight(true)
+    group:SetFullWidth(true)
+    group:SetLayout("List")
+    container:AddChild(group)
+
+    AddButton(group, templateTypes.Icon, "Icon", 0.2)
+    AddButton(group, templateTypes.Text, "Text", 0.2)
+    AddButton(group, templateTypes.Empty, "Group", 0.2)
+    AddButton(group, templateTypes.DynamicGroup, "Dynamic Group", 0.2)
+end
+
 --------------------------------------------
 --- Context Menu
 --------------------------------------------
@@ -156,7 +205,7 @@ function NodesTab.OpenContextMenu(frame, guid)
         description:CreateTitle(frame.value)
 
         description:CreateButton("Add Child Node", function()
-            NodesTab.ShowAddNodeDialog(guid)
+            NodesTab.treeGroup:SelectByPath("add")
         end)
         
         description:CreateButton("Duplicate", function()
