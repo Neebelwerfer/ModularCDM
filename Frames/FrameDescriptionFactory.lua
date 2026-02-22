@@ -35,6 +35,7 @@ local function DefaultTransform()
     return {
             offsetX = 0,
             offsetY = 0,
+            relativePoint = "CENTER",
             scale = 1
     }
 end

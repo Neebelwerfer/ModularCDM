@@ -76,6 +76,37 @@ end
 function PropertiesPanel.BuildIconProperties(container, descriptor, runtimeNode)
     local NodesTab = ns.Editor.NodesTab
     local props = descriptor.props
+    local transform = descriptor.transform
+    
+    local offsetX = AceGUI:Create("EditBox")
+    offsetX:SetLabel("Offset X")
+    offsetX:SetText(transform.offsetX)
+    offsetX:SetRelativeWidth(0.5)
+    offsetX:SetCallback("OnEnterPressed", function(widget, event, value)
+        value = tonumber(value)
+        if value then
+            transform.offsetX = tonumber(value)
+            runtimeNode:MarkLayoutAsDirty()
+        else
+            widget:SetText(transform.offsetX)
+        end
+    end)
+    container:AddChild(offsetX)
+
+    local offsetY = AceGUI:Create("EditBox")
+    offsetY:SetLabel("Offset Y")
+    offsetY:SetText(transform.offsetY)
+    offsetY:SetRelativeWidth(0.5)
+    offsetY:SetCallback("OnEnterPressed", function(widget, event, value)
+        value = tonumber(value)
+        if value then
+            transform.offsetX = tonumber(value)
+            runtimeNode:MarkLayoutAsDirty()
+        else
+            widget:SetText(transform.offsetY)
+        end
+    end)
+    container:AddChild(offsetY)
     
     -- Color Mask
     local colorGroup = AceGUI:Create("SimpleGroup")
@@ -343,6 +374,37 @@ end
 
 function PropertiesPanel.BuildTextProperties(container, descriptor, runtimeNode)
     local props = descriptor.props
+    local transform = descriptor.transform
+
+    local offsetX = AceGUI:Create("EditBox")
+    offsetX:SetLabel("Offset X")
+    offsetX:SetText(transform.offsetX)
+    offsetX:SetRelativeWidth(0.5)
+    offsetX:SetCallback("OnEnterPressed", function(widget, event, value)
+        value = tonumber(value)
+        if value then
+            transform.offsetX = tonumber(value)
+            runtimeNode:MarkLayoutAsDirty()
+        else
+            widget:SetText(transform.offsetX)
+        end
+    end)
+    container:AddChild(offsetX)
+
+    local offsetY = AceGUI:Create("EditBox")
+    offsetY:SetLabel("Offset Y")
+    offsetY:SetText(transform.offsetY)
+    offsetY:SetRelativeWidth(0.5)
+    offsetY:SetCallback("OnEnterPressed", function(widget, event, value)
+        value = tonumber(value)
+        if value then
+            transform.offsetX = tonumber(value)
+            runtimeNode:MarkLayoutAsDirty()
+        else
+            widget:SetText(transform.offsetY)
+        end
+    end)
+    container:AddChild(offsetY)
 
     local fontSize = AceGUI:Create("Slider")
     fontSize:SetLabel("Font Size")
@@ -371,4 +433,35 @@ function PropertiesPanel.BuildTextProperties(container, descriptor, runtimeNode)
 end
 
 function PropertiesPanel.BuildBarProperties(container, descriptor, runtimeNode)
+    local transform = descriptor.transform
+
+    local offsetX = AceGUI:Create("EditBox")
+    offsetX:SetLabel("Offset X")
+    offsetX:SetText(transform.offsetX)
+    offsetX:SetRelativeWidth(0.5)
+    offsetX:SetCallback("OnEnterPressed", function(widget, event, value)
+        value = tonumber(value)
+        if value then
+            transform.offsetX = tonumber(value)
+            runtimeNode:MarkLayoutAsDirty()
+        else
+            widget:SetText(transform.offsetX)
+        end
+    end)
+    container:AddChild(offsetX)
+
+    local offsetY = AceGUI:Create("EditBox")
+    offsetY:SetLabel("Offset Y")
+    offsetY:SetText(transform.offsetY)
+    offsetY:SetRelativeWidth(0.5)
+    offsetY:SetCallback("OnEnterPressed", function(widget, event, value)
+        value = tonumber(value)
+        if value then
+            transform.offsetX = tonumber(value)
+            runtimeNode:MarkLayoutAsDirty()
+        else
+            widget:SetText(transform.offsetY)
+        end
+    end)
+    container:AddChild(offsetY)
 end

@@ -39,6 +39,7 @@ function ModularCore:OnInitialize()
 
     self:RegisterChatCommand("ModularCDM", "SlashCommand")
     self:RegisterChatCommand("mcdm", "SlashCommand")
+    self:RegisterChatCommand("mcd", "SlashCommand")
 
 
     local dynamicGroup = NodeFactory.CreateDynamicGroup()
