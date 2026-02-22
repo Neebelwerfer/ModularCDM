@@ -129,7 +129,7 @@ PropertyFactory.BarPropertyMetadata = {
 
 function PropertyFactory.DefaultTextProperties()
     return {
-        text = {value = "Text", resolveType = "template"}, -- Special case. This is a template property where {binding:field} will be replaced by the binding value runtime
+        text = {value = "", resolveType = "template"}, -- Special case. This is a template property where {binding:field} will be replaced by the binding value runtime
         color = FlexibleProp(Color(1, 1, 1, 1)),
         fontSize = FlexibleProp(12)
     }
