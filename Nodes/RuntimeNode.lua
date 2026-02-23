@@ -208,6 +208,23 @@ function RuntimeNode:ResolvePropsForFrame(frameDescription)
     return resolvedProps
 end
 
+local function SplitPlainText(text, delimiter)
+    local parts = {}
+    local pos = 1
+    
+    while true do
+        local startPos, endPos = string.find(text, delimiter, pos, true)
+        if not startPos then
+            table.insert(parts, text:sub(pos))
+            break
+        end
+        table.insert(parts, text:sub(pos, startPos - 1))
+        pos = endPos + 1
+    end
+    
+    return parts
+end
+
 --- Recursively resolve a prop (handles nested structures)
 function RuntimeNode:ResolveProp(prop)
     -- Handle arrays (like cooldowns)
@@ -246,9 +263,23 @@ function RuntimeNode:ResolveProp(prop)
         end
 
         local text = prop.value
-        for key, value in pairs(bindings) do
+        for key, value in pairs(bindings) do 
             if value and type(value) ~= "table" then
-                text = string.gsub(text, "{"..key.."}", value)
+                local pattern = "{"..key.."}"
+                local parts = SplitPlainText(text, pattern)
+                
+                -- Rebuild text with value inserted between parts
+                local result = ""
+                for i, part in ipairs(parts) do
+                    result = result .. part
+                    if i < #parts then  -- Don't add value after last part
+                        result = result .. tostring(value)
+                    end
+                end
+                
+                text = result
+                -- assert(not issecretvalue(value), "Secret values are not allowed in templates")
+                -- text = string.gsub(text, "{"..key.."}", tostring(value))
             end
         end 
         return text
