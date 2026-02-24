@@ -12,25 +12,9 @@ local ModularCore = ns.Core.ModularCore
 local AC = LibStub("AceConfig-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
 
-
-ns.CdManagerCategories = {
-    Enum.CooldownViewerCategory.Essential,
-    Enum.CooldownViewerCategory.Utility,
-    Enum.CooldownViewerCategory.TrackedBar,
-    Enum.CooldownViewerCategory.TrackedBuff
-}
-
-ns.baseSize = 46
-
-
-
 local DirtyState = {spellID = {}, auraID = {}}
 
 function ModularCore:OnInitialize()
-    local NodeFactory = ns.Nodes.NodeFactory
-    local FrameDescriptionFactory = ns.Frames.FrameDescriptionFactory
-    local PropertyFactory = ns.Frames.PropertyFactory
-
 	self.db = LibStub("AceDB-3.0"):New("ModularCDM_DB", self.defaults, true)
     
 	local profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
@@ -41,6 +25,14 @@ function ModularCore:OnInitialize()
     self:RegisterChatCommand("mcdm", "SlashCommand")
     self:RegisterChatCommand("mcd", "SlashCommand")
 
+    if IsPlayerInWorld() then
+        self:Init()
+    else 
+        self:RegisterEvent("PLAYER_ENTERING_WORLD", "Init")
+    end
+end
+
+function ModularCore:Init()
     ns.Nodes.NodeDatabase:Initialize(self.db)
     ns.Nodes.RuntimeNodeManager.BuildAll()
     self:ScheduleRepeatingTimer("Update", 0.2)
@@ -81,7 +73,6 @@ function ModularCore:SlashCommand()
 end
 
 function ModularCore:SpecChanged()
-    self:BuildSpellLookup()
 end
 
 function ModularCore:Update()
