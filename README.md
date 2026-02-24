@@ -23,10 +23,7 @@ Pre-alpha. The general structure of the project is currently set and its now pos
         - [ ] Drag and Drop in hierarchy to add as a child to another node
         - [x] Movable node when selected in the hierarchy
     - [ ] Property settings
-        - [x] Icon
-        - [x] Cooldown
-        - [x] Text
-        - [ ] Bar 
+        - [ ] A canvas viewer
     - [x] Node layout settings
     - [x] Bindings menu
     - [x] Additional CDM options menu
@@ -44,5 +41,3 @@ Pre-alpha. The general structure of the project is currently set and its now pos
     - [ ] Make dynamic group actually change layout settings for children so it wont get awkward later
     - [ ] Add validation when adding bindings etc. 
     - [ ] Build components to make Editor UI easier to build and modify
-- [ ] Fixes
-    - [ ] Layout: Anchor point seems to behaver weirdly

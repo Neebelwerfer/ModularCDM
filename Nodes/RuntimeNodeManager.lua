@@ -91,4 +91,5 @@ function RuntimeNodeManager.RemoveNode(guid)
 
     runtimeNode:Destroy()
     RuntimeNodeManager.lookupTable[guid] = nil
+    NodeDatabase:RemoveNode(guid)
 end

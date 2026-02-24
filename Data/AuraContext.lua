@@ -47,7 +47,6 @@ end
 
 -- Unregisters a context
 function AuraContextManager.Unregister(sourceGuid, key)
-    assert(contextSubscriptions[key][sourceGuid], "Unregistering an unregistered context")
     contextSubscriptions[key][sourceGuid] = nil
 
     if not next(contextSubscriptions[key]) then
@@ -197,6 +196,8 @@ AuraContext.__index = AuraContext
 
 function AuraContext:new(key)
     local info = C_Spell.GetSpellInfo(key)
+
+    if not info then return end
 
     local context = {
         id = key,

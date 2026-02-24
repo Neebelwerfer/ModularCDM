@@ -39,6 +39,7 @@ function ModularCore:Init()
 
     ns.Core.BlizzardCDMHandler.Initialize()
     ns.Data.DataContext.Initialize()
+    self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 end
 
 

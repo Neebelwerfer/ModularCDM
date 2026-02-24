@@ -68,6 +68,9 @@ SpellContext.__index = SpellContext
 
 function SpellContext:new(key)
     local spellInfo = C_Spell.GetSpellInfo(key)
+
+    if not spellInfo then return end
+
     local charges = C_Spell.GetSpellCharges(key)
     local cooldown = C_Spell.GetSpellCooldown(key)
     local isUsable, noMana = C_Spell.IsSpellUsable(key)
