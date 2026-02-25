@@ -48,7 +48,7 @@ local function IconFrameReset(_, frame)
 end
 
 local function IconFrameInit(frame)
-    frame.tex = frame:CreateTexture()
+    frame.tex = frame:CreateTexture(nil, "OVERLAY")
     frame.tex:SetAllPoints(frame)
 
     frame.cooldowns = {}

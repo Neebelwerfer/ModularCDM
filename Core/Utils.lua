@@ -12,6 +12,23 @@ function ns.Core.GenerateGUID()
     return guid
 end
 
+function ns.Core.SplitPlainText(text, delimiter)
+    local parts = {}
+    local pos = 1
+    
+    while true do
+        local startPos, endPos = string.find(text, delimiter, pos, true)
+        if not startPos then
+            table.insert(parts, text:sub(pos))
+            break
+        end
+        table.insert(parts, text:sub(pos, startPos - 1))
+        pos = endPos + 1
+    end
+    
+    return parts
+end
+
 
 ns.QuestionMark = "Interface\\Icons\\INV_Misc_QuestionMark"
 ns.AddSign = 450907  --should be the + icon

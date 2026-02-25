@@ -1,4 +1,6 @@
 local _, ns = ...
+local Core = ns.Core
+local Data = ns.Data
 
 ---@class RuntimeNode
 ---@field node Node
@@ -12,8 +14,6 @@ local RuntimeNode = {}
 RuntimeNode.__index = RuntimeNode
 ns.Nodes.RuntimeNode = RuntimeNode
 
-local Core = ns.Core
-local Data = ns.Data
 
 ---@param node Node
 ---@param parentRuntimeNode RuntimeNode?
@@ -24,7 +24,6 @@ function RuntimeNode:new(node, parentRuntimeNode)
     runtimeNode.node = node
     runtimeNode.guid = node.guid
     runtimeNode.parentRuntimeNode = parentRuntimeNode
-    runtimeNode.frames = {}
     runtimeNode.internalState = {
         dirtyLayout = true,
         dirtyFrames = false,
@@ -227,15 +226,6 @@ end
 
 --- Recursively resolve a prop (handles nested structures)
 function RuntimeNode:ResolveProp(prop)
-    -- Handle arrays (like cooldowns)
-    if type(prop) == "table" and #prop > 0 then
-        local resolved = {}
-        for i, item in ipairs(prop) do
-            resolved[i] = self:ResolveProp(item)
-        end
-        return resolved
-    end
-    
     -- Handle prop descriptors
     if prop.resolveType == "static" then
         return prop.value

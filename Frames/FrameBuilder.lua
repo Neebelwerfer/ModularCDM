@@ -3,7 +3,7 @@ local FramePools = ns.Frames.FramePools
 local PropertyFrame = ns.Frames.PropertyFrame
 local FrameTypes = ns.Frames.FrameTypes
 
-FrameBuilder = {}
+FrameBuilder = {} --TODO: Fix global
 ns.Frames.FrameBuilder = FrameBuilder
 
 
@@ -101,15 +101,16 @@ function FrameBuilder.BuildFrameFromDescriptor(node, rootFrame, frameDescriptor)
 end
 
 function FrameBuilder.ApplyIconProps(frame, resolvedProps)
-    local color = resolvedProps.colorMask
-    local icon = resolvedProps.icon
+    local color = resolvedProps.colorMask or { r = 1, g = 1, b = 1, a = 1 }
+    local icon = resolvedProps.icon or "Interface\\Icons\\INV_Misc_QuestionMark"
     
-    frame.tex:SetAllPoints(frame)
     frame.tex:SetTexture(icon or 134400)
     frame.tex:SetVertexColor(color.r, color.g, color.b, color.a)
 
-    for i, cd in ipairs(frame.cooldowns) do
-        FrameBuilder.ApplyCooldownProps(cd.frame, resolvedProps.cooldowns[i])
+    if resolvedProps.cooldowns then
+        for i, cd in ipairs(frame.cooldowns) do
+            FrameBuilder.ApplyCooldownProps(cd.frame, resolvedProps.cooldowns[i])
+        end
     end
 end
 
@@ -122,7 +123,7 @@ function FrameBuilder.ApplyCooldownProps(frame, resolvedProps)
     -- Color mask
     local swipe = resolvedProps.swipe
     if swipe then
-        local color = swipe.color
+        local color = swipe.color or { r = 1, g = 1, b = 1, a = 1 }
         frame:SetDrawSwipe(swipe.enabled)
         frame:SetSwipeColor(color.r, color.g, color.b, color.a)
         frame:SetSwipeTexture("", color.r, color.g, color.b, color.a)
@@ -130,7 +131,7 @@ function FrameBuilder.ApplyCooldownProps(frame, resolvedProps)
 
     local edge = resolvedProps.edge
     if edge then
-        local color = edge.color
+        local color = edge.color or { r = 1, g = 1, b = 1, a = 1 }
         frame:SetDrawEdge(edge.enabled)
         frame:SetEdgeColor(color.r, color.g, color.b, color.a)
         frame:SetEdgeScale(edge.scale)
@@ -138,7 +139,7 @@ function FrameBuilder.ApplyCooldownProps(frame, resolvedProps)
 
     local bling = resolvedProps.bling
     if bling then
-        local color = bling.color
+        local color = bling.color or { r = 1, g = 1, b = 1, a = 1 }
         frame:SetDrawBling(bling.enabled)
         frame:SetBlingTexture("", color.r, color.g, color.b, color.a)
     end
@@ -155,7 +156,7 @@ function FrameBuilder.ApplyTextProps(frame, resolvedProps)
     frame.text:SetFont("Fonts\\FRIZQT__.TTF", resolvedProps.fontSize or 12, "OUTLINE")
     frame.text:SetText(resolvedProps.text or "")
 
-    local color = resolvedProps.color
+    local color = resolvedProps.color or { r = 1, g = 1, b = 1, a = 1 }
     frame.text:SetTextColor(color.r, color.g, color.b, color.a)
 end
 

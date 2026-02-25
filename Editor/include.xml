@@ -2,6 +2,7 @@
     <Script file="EditorUtility.lua"/>
     <Script file="Components.lua"/>
     <Script file="EditorManager.lua"/>
+    <Include file="PreviewEngine\include.xml"/>
     <Include file="NodeInspector\include.xml"/>
     <Script file="NodesTab.lua"/>
     <Script file="CDMTab.lua"/>

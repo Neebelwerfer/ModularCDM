@@ -41,3 +41,4 @@ Pre-alpha. The general structure of the project is currently set and its now pos
     - [ ] Make dynamic group actually change layout settings for children so it wont get awkward later
     - [ ] Add validation when adding bindings etc. 
     - [ ] Build components to make Editor UI easier to build and modify
+    - [ ] Update the DataContext to be more stable when getting a wrong binding or other issues
