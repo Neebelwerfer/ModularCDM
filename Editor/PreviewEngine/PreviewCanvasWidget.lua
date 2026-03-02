@@ -55,7 +55,7 @@ local function BuildCanvas(widget, frame)
     end)
 end
 
-local function BuildComponentList(frame)
+local function BuildComponentList(widget, frame)
     local inspector = AceGUI:Create("InlineGroup")
     inspector:SetTitle("Inspector")
     inspector.frame:SetParent(frame)
@@ -66,19 +66,25 @@ local function BuildComponentList(frame)
     inspector.SetupNode = function(self, node)
         self:ReleaseChildren()
 
+        local first = true
         for _, frameDescriptor in pairs(node.frames) do
             local button = AceGUI:Create("InteractiveLabel")
             button:SetText(frameDescriptor.name)
 
-            button:SetCallback("OnClick", function(widget)
-                print(frameDescriptor.name)
+            button:SetCallback("OnClick", function(button)
+                widget:Fire("OnComponentSelected", frameDescriptor)
             end)
+
+            if first then
+                widget:Fire("OnComponentSelected", frameDescriptor)
+                first = false
+            end
 
             self:AddChild(button)
         end
     end
 
-    return inspector
+    widget.componentList = inspector
 end
 
 
@@ -90,12 +96,8 @@ local function Constructor()
         type = Type,
         frame = frame,
     }
-    
     BuildCanvas(widget, frame)
-    widget.componentList = BuildComponentList(frame)
-
-    widget.canvas:SetFrameLevel(frame:GetFrameLevel())
-    widget.componentList.frame:SetFrameLevel(frame:GetFrameLevel() + 10)
+    BuildComponentList(widget, frame)
 
     function widget:OnWidthSet(width)
         self.canvas:SetWidth(width)
@@ -111,7 +113,9 @@ local function Constructor()
     end
 
     function widget:OnHeightSet(height)
+        self.frame:SetHeight(height)
         self.canvas:SetHeight(height)
+        self.viewport:SetHeight(height)
 
         self.componentList:SetHeight(height)
     end
@@ -158,6 +162,7 @@ local function Constructor()
         self:ClearNode()
         self.scaleNumber.scaleText:SetText("1")
         self.scaleSlider:SetValue(1)
+        self.componentList:ReleaseChildren()
     end
 
     return AceGUI:RegisterAsWidget(widget)

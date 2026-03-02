@@ -29,43 +29,37 @@ function PropertiesPanel.Build(container)
         scroll:AddChild(previewGroup)
 
         local previewCanvas = AceGUI:Create("PreviewCanvas")
-        previewCanvas:SetRelativeWidth(0.7)
+        previewCanvas:SetFullWidth(true)
         previewCanvas:SetHeight(300)
-        previewCanvas:SetNode(runtimeNode.node)
         previewGroup:AddChild(previewCanvas)
-    end
-    
-    --Frame-specific properties for each frame descriptor
-    for frameName, propertyFrame in pairs(runtimeNode.rootFrame.frames) do
-        local descriptor = propertyFrame.descriptor
         
-        local frameType = nil
-        for k, v in pairs(FrameTypes) do
-            if v == descriptor.type then
-                frameType = k
-                break
+        local propertyContainer = AceGUI:Create("SimpleGroup")
+        propertyContainer:SetFullWidth(true)
+        propertyContainer:SetLayout("Flow")
+        scroll:AddChild(propertyContainer)
+        
+        previewCanvas:SetCallback("OnComponentSelected", function (widget, event, descriptor)
+            propertyContainer:ReleaseChildren()
+            print("Selected", descriptor.name)
+            
+            local frameGroup = AceGUI:Create("InlineGroup")
+            frameGroup:SetTitle(descriptor.name .. " (" .. descriptor.type .. ")")
+            frameGroup:SetFullWidth(true)
+            frameGroup:SetLayout("Flow")
+            propertyContainer:AddChild(frameGroup)
+            
+            -- Build type-specific property UI
+            if descriptor.type == FrameTypes.Icon then
+                PropertiesPanel.BuildIconProperties(frameGroup, descriptor, runtimeNode)
+            elseif descriptor.type == FrameTypes.Text then
+                PropertiesPanel.BuildTextProperties(frameGroup, descriptor, runtimeNode)
+            elseif descriptor.type == FrameTypes.Bar then
+                PropertiesPanel.BuildBarProperties(frameGroup, descriptor, runtimeNode)
             end
-        end
-        if not frameType then
-            error("Unknown frame type: " .. descriptor.type)
-        end
-
-        local frameGroup = AceGUI:Create("InlineGroup")
-        frameGroup:SetTitle(frameName .. " (" .. frameType .. ")")
-        frameGroup:SetFullWidth(true)
-        frameGroup:SetLayout("Flow")
-        scroll:AddChild(frameGroup)
-        
-        -- Build type-specific property UI
-        if descriptor.type == FrameTypes.Icon then
-            PropertiesPanel.BuildIconProperties(frameGroup, descriptor, runtimeNode)
-        elseif descriptor.type == FrameTypes.Text then
-            PropertiesPanel.BuildTextProperties(frameGroup, descriptor, runtimeNode)
-        elseif descriptor.type == FrameTypes.Bar then
-            PropertiesPanel.BuildBarProperties(frameGroup, descriptor, runtimeNode)
-        end
+            scroll:DoLayout()
+        end)
+        previewCanvas:SetNode(runtimeNode.node)
     end
-    scroll:DoLayout()
 end
 
 function PropertiesPanel.BuildIconProperties(container, descriptor, runtimeNode)
