@@ -15,8 +15,13 @@ local function BuildCanvas(widget, frame)
     })
     canvas:SetBackdropColor(0, 0, 0, 0.8)
     -- canvas:SetSize(height, width * 0.7)
-    canvas:SetPoint("CENTER", frame, "CENTER", 0, 0)
+    canvas:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
+    canvas:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0)
     widget.canvas = canvas
+
+    local viewport = CreateFrame("Frame", nil, canvas)
+    viewport:SetClipsChildren(true)
+    widget.viewport = viewport
 
     local scaleSlider = CreateFrame("Slider", nil, canvas, "OptionsSliderTemplate")
     scaleSlider:SetPoint("BOTTOMLEFT", 10, 10)
@@ -50,99 +55,35 @@ local function BuildCanvas(widget, frame)
     end)
 end
 
+local function BuildComponentList(frame)
+    local inspector = AceGUI:Create("InlineGroup")
+    inspector:SetTitle("Inspector")
+    inspector.frame:SetParent(frame)
+    inspector.frame:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, 0)
+    inspector.frame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -5, 0)
+    inspector:SetLayout("List")
 
-local function ButtonReset(_, frame)
-    frame:ClearAllPoints()
-    frame:SetParent(nil)
-    frame:Hide()
+    inspector.SetupNode = function(self, node)
+        self:ReleaseChildren()
 
-    frame:SetScript("OnMouseUp", nil)
-end
-
-local function ButtonInit(frame)
-    frame.text =  frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    frame.text:SetPoint("CENTER", frame, "CENTER", 0, 0)
-    frame:SetScript("OnEnter", function(self)
-        self.text:SetTextColor(1, 1, 1, 1)
-    end)
-    frame:SetScript("OnLeave", function(self)
-        self.text:SetTextColor(1, 1, 1, 0.8)
-    end)
-    frame:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        edgeSize = 1
-    })
-    frame:SetBackdropColor(0, 0, 0, 0.8)
-end
-
-local buttonPool = CreateFramePool("Frame", nil, "BackdropTemplate", ButtonReset, nil, ButtonInit)
-
-local function CreatePropertyButton(parent)
-
-    local button = buttonPool:Acquire()
-    button:SetParent(parent)
-    button:SetHeight(20)
-
-    button.SetText = function(self, text)
-        self.text:SetText(text)
-    end
-
-    button:Show()
-    return button
-end
-
-local function DestroyPropertyButton(button)
-    buttonPool:Release(button)
-end
-
-local function BuildPropertyList(frame)
-    local propertyList = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-    propertyList:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-
-    })
-
-    propertyList:SetBackdropColor(0, 0, 0, 0.8)
-    
-    propertyList.buttons = {}
-    propertyList.Destroy = function (self)
-        for _, button in pairs(self.buttons) do
-            DestroyPropertyButton(button)
-        end
-        table.wipe(self.buttons)
-    end
-
-    propertyList.SetupNode = function (self, node)
-        for i, frameDescriptor in ipairs(node.frames) do
-            local offset = 10 + (i - 1) * 19
-
-            local button = CreatePropertyButton(self)
-            button:ClearAllPoints()
-            button:SetPoint("TOPLEFT", self, "TOPLEFT", 10, -offset)
-            button:SetPoint("TOPRIGHT", self, "TOPRIGHT", -10, -offset)
+        for _, frameDescriptor in pairs(node.frames) do
+            local button = AceGUI:Create("InteractiveLabel")
             button:SetText(frameDescriptor.name)
-            table.insert(self.buttons, button)
-        end
 
-        local button = CreatePropertyButton(self)
-        button:SetPoint("TOPLEFT", self, "TOPLEFT", 10, -10 - (#self.buttons) * 19)
-        button:SetPoint("TOPRIGHT", self, "TOPRIGHT", -10, -10 - (#self.buttons) * 19)
-        button:SetText("Add Component")
-        table.insert(self.buttons, button)
+            button:SetCallback("OnClick", function(widget)
+                print(frameDescriptor.name)
+            end)
+
+            self:AddChild(button)
+        end
     end
 
-
-
-    
-
-    return propertyList
+    return inspector
 end
 
 
 local function Constructor()
-    local frame = CreateFrame("Frame", nil, UIParent)
+    local frame = CreateFrame("Frame", nil)
     frame:EnableMouse(true)
 
     local widget = {
@@ -151,30 +92,34 @@ local function Constructor()
     }
     
     BuildCanvas(widget, frame)
-    local propertyList = BuildPropertyList(frame)
-    widget.propertyList = propertyList
+    widget.componentList = BuildComponentList(frame)
 
+    widget.canvas:SetFrameLevel(frame:GetFrameLevel())
+    widget.componentList.frame:SetFrameLevel(frame:GetFrameLevel() + 10)
 
-    function widget:SetWidth(width)
-        self.frame:SetWidth(width)
-        self.canvas:SetWidth(width * 0.70)
-        self.canvas:SetPoint("CENTER", self.frame, "CENTER", -width * 0.35 * 0.5 + 10, 0) --TODO: I dont like this. should be cleaned up.
+    function widget:OnWidthSet(width)
+        self.canvas:SetWidth(width)
 
-        self.propertyList:SetWidth(width * 0.3)
-        self.propertyList:SetPoint("CENTER", self.frame, "CENTER", width * 0.35, 0)
-        
+        local inspectorWidth = math.max(200, width * 0.3)
+        self.componentList:SetWidth(inspectorWidth)
+
+        local viewportWidth = width - inspectorWidth - 10
+        self.viewport:ClearAllPoints()
+        self.viewport:SetPoint("TOPLEFT", self.canvas, "TOPLEFT", 0, 0)
+        self.viewport:SetPoint("BOTTOMLEFT", self.canvas, "BOTTOMLEFT", 0, 0)
+        self.viewport:SetWidth(viewportWidth)
     end
 
-    function widget:SetHeight(height)
-        self.frame:SetHeight(height)
+    function widget:OnHeightSet(height)
         self.canvas:SetHeight(height)
-        self.propertyList:SetHeight(height)
+
+        self.componentList:SetHeight(height)
     end
 
     function widget:ClearNode()
         if not widget.node then return end
         widget.node:Destroy()
-        widget.propertyList:Destroy()
+        -- widget.propertyList:Destroy()
         widget.node = nil
     end
 
@@ -182,8 +127,9 @@ local function Constructor()
         if widget.node then
             widget:ClearNode()
         end
-        widget.node = previewNode:new(node, self.canvas)
-        widget.propertyList:SetupNode(node)
+
+        widget.node = previewNode:new(node, self.viewport)
+        widget.componentList:SetupNode(node)
         previewDataProvider.Restart()
     end
 
@@ -191,14 +137,6 @@ local function Constructor()
         if widget.node then
             widget.node.rootFrame:SetScale(scale)
         end
-    end
-
-    function widget:OnWidthSet(width)
-        self.frame:SetWidth(width)
-    end
-
-    function widget:OnHeightSet(height)
-        self.frame:SetHeight(height)
     end
     -- widget:SetNodes(nodeDefinitions)
     -- widget:SelectNode(nodeId)
