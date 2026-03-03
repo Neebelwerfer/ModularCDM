@@ -57,11 +57,7 @@ local function BuildCanvas(widget, frame)
     offsetYEditBox:SetNumericFullRange(true)
     offsetYEditBox:SetScript("OnEnterPressed", function(self)
         self:ClearFocus()
-        if widget.componentList.selected then
-            local frameDescriptor = widget.componentList.selected.frameDescriptor
-            frameDescriptor.transform.offsetY = self:GetNumber()
-            widget.node:MarkLayoutAsDirty()
-        end
+        widget:SetComponentTransform(widget.frameDescriptor.transform.offsetX, self:GetNumber())
     end)
     
     local offsetXLabel = viewport:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -76,11 +72,7 @@ local function BuildCanvas(widget, frame)
     offsetXEditBox:SetNumericFullRange(true)
     offsetXEditBox:SetScript("OnEnterPressed", function(self)
         self:ClearFocus()
-        if widget.componentList.selected then
-            local frameDescriptor = widget.componentList.selected.frameDescriptor
-            frameDescriptor.transform.offsetX = self:GetNumber()
-            widget.node:MarkLayoutAsDirty()
-        end
+        widget:SetComponentTransform(self:GetNumber(), widget.frameDescriptor.transform.offsetY)
     end)
 
     widget.offsetYEditBox = offsetYEditBox
@@ -105,9 +97,12 @@ local function BuildCanvas(widget, frame)
     overlayFrame:SetBackdropColor(0, 0, 0, 0.3)
     overlayFrame:SetBackdropBorderColor(0, 1, 0, 0.8)
     overlayFrame:Hide()
+    overlayFrame:SetParent(viewport)
     overlayFrame:EnableMouse(true)
     overlayFrame:SetMovable(true)
     overlayFrame:RegisterForDrag("LeftButton")
+    overlayFrame:SetFrameStrata("TOOLTIP")
+    overlayFrame:SetFrameLevel(100)
     overlayFrame.isMoving = false
 
     overlayFrame:SetScript("OnMouseDown", function(overlay)
@@ -135,19 +130,9 @@ local function BuildCanvas(widget, frame)
         overlay.cursorX = cursorX
         overlay.cursorY = cursorY
 
-        local _, _, _, x, y = overlay:GetPoint()
-        local offsetX = x + deltaX
-        local offsetY = y + deltyY
-        overlay:ClearAllPoints()
-        overlay:SetPoint("CENTER", overlay:GetParent(), "CENTER", offsetX, offsetY)
-        if widget.componentList.selected.frameDescriptor then
-            widget.componentList.selected.frameDescriptor.transform.offsetX = math.floor(offsetX + 0.5)
-            widget.componentList.selected.frameDescriptor.transform.offsetY = math.floor(offsetY + 0.5)
-
-            widget.offsetXEditBox:SetText(math.floor(offsetX + 0.5))
-            widget.offsetYEditBox:SetText(math.floor(offsetY + 0.5))
-            widget.node:MarkLayoutAsDirty()
-        end
+        local offsetX = widget.frameDescriptor.transform.offsetX + deltaX
+        local offsetY = widget.frameDescriptor.transform.offsetY + deltyY
+        widget:SetComponentTransform(offsetX, offsetY)
     end)
     widget.overlayFrame = overlayFrame
 end
@@ -162,7 +147,7 @@ local function BuildComponentList(widget, frame)
 
     inspector.SetupNode = function(self, node)
         self:ReleaseChildren()
-        inspector.selected = nil
+        inspector.selectedButton = nil
 
         local first = true
         for _, frameDescriptor in pairs(node.frames) do
@@ -171,32 +156,17 @@ local function BuildComponentList(widget, frame)
             button:SetFullWidth(true)
 
             button:SetCallback("OnClick", function(button)
-                widget:Fire("OnComponentSelected", frameDescriptor)
-                widget.overlayFrame:Show()
                 button:Disable()
-                if inspector.selected then
-                    inspector.selected.button:Enable()
+                if inspector.selectedButton then
+                    inspector.selectedButton:Enable()
                 end
-
-                widget.overlayFrame:ClearAllPoints()
-                widget.overlayFrame:SetPoint("CENTER", widget.node.rootFrame, "CENTER", frameDescriptor.transform.offsetX, frameDescriptor.transform.offsetY)
-
-                widget.offsetXEditBox:SetText(frameDescriptor.transform.offsetX)
-                widget.offsetYEditBox:SetText(frameDescriptor.transform.offsetY)
-
-                inspector.selected = { button = button, frameDescriptor = frameDescriptor }
+                widget:SelectComponent(frameDescriptor)
+                inspector.selectedButton = button
             end)
 
             if first then
-                widget:Fire("OnComponentSelected", frameDescriptor)
-
-                widget.overlayFrame:ClearAllPoints()
-                widget.overlayFrame:SetPoint("CENTER", widget.node.rootFrame, "CENTER", frameDescriptor.transform.offsetX, frameDescriptor.transform.offsetY)
-
-                widget.offsetXEditBox:SetText(frameDescriptor.transform.offsetX)
-                widget.offsetYEditBox:SetText(frameDescriptor.transform.offsetY)
-
-                inspector.selected = { button = button, frameDescriptor = frameDescriptor }
+                widget:SelectComponent(frameDescriptor)
+                inspector.selectedButton = button
                 button:Disable()
                 first = false
             end
@@ -226,6 +196,7 @@ local function Constructor()
     local widget = {
         type = Type,
         frame = frame,
+        frameDescriptor = nil
     }
     BuildCanvas(widget, frame)
     BuildComponentList(widget, frame)
@@ -254,7 +225,6 @@ local function Constructor()
     function widget:ClearNode()
         if not widget.node then return end
         widget.node:Destroy()
-        widget.overlayFrame:SetParent(nil)
         widget.node = nil
     end
 
@@ -264,10 +234,8 @@ local function Constructor()
         end
 
         widget.node = previewNode:new(runtimeNode, self.viewport)
-        widget.overlayFrame:SetParent(widget.node.rootFrame)
         widget.overlayFrame:SetSize(widget.node.rootFrame:GetSize())
-        widget.overlayFrame:SetFrameStrata("HIGH")
-        widget.overlayFrame:Show()
+        widget:SetNodeScale(1)
 
         widget.componentList:SetupNode(runtimeNode.node)
         previewDataProvider.Restart()
@@ -276,11 +244,35 @@ local function Constructor()
     function widget:SetNodeScale(scale)
         if widget.node then
             widget.node.rootFrame:SetScale(scale)
+            widget.overlayFrame:SetScale(scale)
         end
     end
 
-    -- widget:Fire("OnNodeMoved", node)
-    
+    function widget:SetComponentTransform(x, y)
+        x = math.floor(x * 100 + 0.5) / 100
+        y = math.floor(y * 100 + 0.5) / 100
+        self.overlayFrame:ClearAllPoints()
+        self.overlayFrame:SetPoint("CENTER", self.node.rootFrame, "CENTER", x, y)
+
+        self.offsetXEditBox:SetText(x)
+        self.offsetYEditBox:SetText(y)
+
+        self.frameDescriptor.transform.offsetX = x
+        self.frameDescriptor.transform.offsetY = y
+        self.node:MarkLayoutAsDirty()
+    end
+
+    function widget:SelectComponent(frameDescriptor)
+        self.overlayFrame:ClearAllPoints()
+        self.overlayFrame:SetPoint("CENTER", self.node.rootFrame, "CENTER", frameDescriptor.transform.offsetX, frameDescriptor.transform.offsetY)
+        self.overlayFrame:Show()
+
+        self.offsetXEditBox:SetText(frameDescriptor.transform.offsetX)
+        self.offsetYEditBox:SetText(frameDescriptor.transform.offsetY)
+        self.frameDescriptor = frameDescriptor
+
+        widget:Fire("OnComponentSelected", frameDescriptor)
+    end    
 
     -- Required by AceGUI
     widget.OnAcquire = function(self)
