@@ -25,9 +25,11 @@ function RuntimeNode:new(node, parentRuntimeNode)
     runtimeNode.guid = node.guid
     runtimeNode.parentRuntimeNode = parentRuntimeNode
     runtimeNode.internalState = {
-        dirtyLayout = true,
+        visible = true,
+        
         dirtyFrames = false,
-        visible = true
+        dirtyLayout = true,
+        dirtyObservers = {},
     }
     
     -- Register Bindings
@@ -41,6 +43,17 @@ function RuntimeNode:new(node, parentRuntimeNode)
     runtimeNode.rootFrame = FrameBuilder.BuildRootFrame(node, parentFrame)
 
     return runtimeNode
+end
+
+---comment
+---@param observer any
+---@param callback function
+function RuntimeNode:AddDirtyObserver(observer, callback)
+    self.internalState.dirtyObservers[observer] = callback
+end
+
+function RuntimeNode:RemoveDirtyObserver(observer)
+    self.internalState.dirtyObservers[observer] = nil
 end
 
 function RuntimeNode:UpdateTransforms()
@@ -89,6 +102,10 @@ end
 
 function RuntimeNode:MarkFramesAsDirty()
     self.internalState.dirtyFrames = true
+    
+    for _, callback in pairs(self.internalState.dirtyObservers) do
+        callback(self)
+    end
 end
 
 
@@ -129,6 +146,10 @@ function RuntimeNode:MarkLayoutAsDirty()
 
     if self.parentRuntimeNode then
         self.parentRuntimeNode:MarkLayoutAsDirty()
+    end
+
+    for _, callback in pairs(self.internalState.dirtyObservers) do
+        callback(self)
     end
 end
 

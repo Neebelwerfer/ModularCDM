@@ -22,43 +22,43 @@ function PropertiesPanel.Build(container)
     scroll:SetLayout("Flow")
     container:AddChild(scroll)
 
+    local previewGroup = AceGUI:Create("SimpleGroup")
+    previewGroup:SetFullWidth(true)
+    previewGroup:SetLayout("Fill")
+    previewGroup:SetHeight(300)
+    scroll:AddChild(previewGroup)
+    
+    local previewCanvas = AceGUI:Create("PreviewCanvas")
+    previewCanvas:SetFullWidth(true)
+    previewCanvas:SetHeight(300)
+    previewGroup:AddChild(previewCanvas)
+    
+    local propertyContainer = AceGUI:Create("SimpleGroup")
+    propertyContainer:SetFullWidth(true)
+    propertyContainer:SetLayout("Flow")
+    scroll:AddChild(propertyContainer)
+    
+    previewCanvas:SetCallback("OnComponentSelected", function (widget, event, descriptor)
+        propertyContainer:ReleaseChildren()            
+        local frameGroup = AceGUI:Create("InlineGroup")
+        frameGroup:SetTitle(descriptor.name .. " (" .. descriptor.type .. ")")
+        frameGroup:SetFullWidth(true)
+        frameGroup:SetLayout("Flow")
+        propertyContainer:AddChild(frameGroup)
+        
+        -- Build type-specific property UI
+        if descriptor.type == FrameTypes.Icon then
+            PropertiesPanel.BuildIconProperties(frameGroup, descriptor, runtimeNode)
+        elseif descriptor.type == FrameTypes.Text then
+            PropertiesPanel.BuildTextProperties(frameGroup, descriptor, runtimeNode)
+        elseif descriptor.type == FrameTypes.Bar then
+            PropertiesPanel.BuildBarProperties(frameGroup, descriptor, runtimeNode)
+        end
+        scroll:DoLayout()
+    end)
+    previewCanvas:SetCallback("OnAddComponent", PropertiesPanel.OnAddComponent)
+    
     if next(node.frames) then
-        local previewGroup = AceGUI:Create("SimpleGroup")
-        previewGroup:SetFullWidth(true)
-        previewGroup:SetLayout("Fill")
-        previewGroup:SetHeight(300)
-        scroll:AddChild(previewGroup)
-
-        local previewCanvas = AceGUI:Create("PreviewCanvas")
-        previewCanvas:SetFullWidth(true)
-        previewCanvas:SetHeight(300)
-        previewGroup:AddChild(previewCanvas)
-        
-        local propertyContainer = AceGUI:Create("SimpleGroup")
-        propertyContainer:SetFullWidth(true)
-        propertyContainer:SetLayout("Flow")
-        scroll:AddChild(propertyContainer)
-        
-        previewCanvas:SetCallback("OnComponentSelected", function (widget, event, descriptor)
-            propertyContainer:ReleaseChildren()            
-            local frameGroup = AceGUI:Create("InlineGroup")
-            frameGroup:SetTitle(descriptor.name .. " (" .. descriptor.type .. ")")
-            frameGroup:SetFullWidth(true)
-            frameGroup:SetLayout("Flow")
-            propertyContainer:AddChild(frameGroup)
-            
-            -- Build type-specific property UI
-            if descriptor.type == FrameTypes.Icon then
-                PropertiesPanel.BuildIconProperties(frameGroup, descriptor, runtimeNode)
-            elseif descriptor.type == FrameTypes.Text then
-                PropertiesPanel.BuildTextProperties(frameGroup, descriptor, runtimeNode)
-            elseif descriptor.type == FrameTypes.Bar then
-                PropertiesPanel.BuildBarProperties(frameGroup, descriptor, runtimeNode)
-            end
-            scroll:DoLayout()
-        end)
-        previewCanvas:SetCallback("OnAddComponent", PropertiesPanel.OnAddComponent)
-
         previewCanvas:SetNode(runtimeNode)
     end
 end

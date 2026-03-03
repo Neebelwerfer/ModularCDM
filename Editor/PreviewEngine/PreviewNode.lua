@@ -19,24 +19,15 @@ function PreviewNode:new(runtimeNode, parentFrame)
 
     previewNode.rootFrame = FrameBuilder.BuildRootFrame(node, parentFrame)
     previewNode.rootFrame:SetPoint("CENTER", parentFrame, "CENTER", 0, 0)
-
-    for _, frameContext in pairs(previewNode.rootFrame.frames) do
-        local descriptor = frameContext.descriptor
-        frameContext.frame:SetSize(node.layout.size.width, node.layout.size.height)
-        frameContext.frame:SetPoint("CENTER", previewNode.rootFrame, descriptor.transform.relativePoint, descriptor.transform.offsetX, descriptor.transform.offsetY)
-    end
     
     previewNode.internalState = {
-        dirtyFrames = true,
+        dirtyFrames = false,
         dirtyLayout = true
     }
 
-    AceHook:Hook(runtimeNode, "MarkFramesAsDirty", function()
-        previewNode.internalState.dirtyFrames = true
-    end)
-
-    AceHook:Hook(runtimeNode, "MarkLayoutAsDirty", function()
-        previewNode.internalState.dirtyLayout = true
+    runtimeNode:AddDirtyObserver(previewNode, function (runtimeNode)
+        previewNode.internalState.dirtyFrames = runtimeNode.internalState.dirtyFrames or previewNode.internalState.dirtyFrames
+        previewNode.internalState.dirtyLayout = runtimeNode.internalState.dirtyLayout or previewNode.internalState.dirtyLayout
     end)
 
     return previewNode
@@ -71,7 +62,7 @@ function PreviewNode:RebuildFrames()
     self.rootFrame:Destroy()
     self.rootFrame = FrameBuilder.BuildRootFrame(self.node, parentFrame)
 
-    self:MarkFramesAsDirty()
+    self.internalState.dirtyLayout = true
 end
 
 function PreviewNode:UpdateTransforms()
@@ -88,18 +79,7 @@ end
 
 function PreviewNode:Destroy()
     self.rootFrame:Destroy()
-
-    AceHook:Unhook(self.runtimeNode, "MarkFramesAsDirty")
-    AceHook:Unhook(self.runtimeNode, "MarkLayoutAsDirty")
-end
-
-
-function PreviewNode:Rebuild()
-    local parentFrame = self.rootFrame:GetParent()
-    assert(parentFrame, "Parent frame not found")
-
-    self.rootFrame:Destroy()
-    self.rootFrame = FrameBuilder.BuildRootFrame(self.node, parentFrame)
+    self.runtimeNode:RemoveDirtyObserver(self)
 end
 
 
