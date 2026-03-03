@@ -39,9 +39,7 @@ function PropertiesPanel.Build(container)
         scroll:AddChild(propertyContainer)
         
         previewCanvas:SetCallback("OnComponentSelected", function (widget, event, descriptor)
-            propertyContainer:ReleaseChildren()
-            print("Selected", descriptor.name)
-            
+            propertyContainer:ReleaseChildren()            
             local frameGroup = AceGUI:Create("InlineGroup")
             frameGroup:SetTitle(descriptor.name .. " (" .. descriptor.type .. ")")
             frameGroup:SetFullWidth(true)
@@ -58,8 +56,14 @@ function PropertiesPanel.Build(container)
             end
             scroll:DoLayout()
         end)
+        previewCanvas:SetCallback("OnAddComponent", PropertiesPanel.OnAddComponent)
+
         previewCanvas:SetNode(runtimeNode.node)
     end
+end
+
+function PropertiesPanel.OnAddComponent()
+    print("OnAddComponent")
 end
 
 function PropertiesPanel.BuildIconProperties(container, descriptor, runtimeNode)

@@ -65,42 +65,53 @@ local function BuildComponentList(widget, frame)
 
     inspector.SetupNode = function(self, node)
         self:ReleaseChildren()
+        inspector.selected = nil
 
         local first = true
         for _, frameDescriptor in pairs(node.frames) do
-            local button = AceGUI:Create("Button")
+            local button = AceGUI:Create("InspectorButton")
             button:SetText(frameDescriptor.name)
             button:SetFullWidth(true)
             
-            local tex = "Interface\\Buttons\\WHITE8X8"
-            button.frame:SetNormalTexture(tex)
-            button.frame:SetPushedTexture(tex)
-            button.frame:SetHighlightTexture(tex)
-            button.frame:SetDisabledTexture(tex)
+            -- local tex = "Interface\\Buttons\\WHITE8X8"
+            -- button.frame:SetNormalTexture(tex)
+            -- button.frame:SetPushedTexture(tex)
+            -- button.frame:SetHighlightTexture(tex)
+            -- button.frame:SetDisabledTexture(tex)
             
-            button.frame:GetNormalTexture():SetVertexColor(0.1,0.1,0.1,0.9)
-            button.frame:GetPushedTexture():SetVertexColor(0.05,0.05,0.05,1)
-            button.frame:GetHighlightTexture():SetVertexColor(1,1,1,0.1)
-            button.frame:GetDisabledTexture():SetVertexColor(0.2,0.2,0.2,0.5)
+            -- button.frame:GetNormalTexture():SetVertexColor(0.1,0.1,0.1,0.9)
+            -- button.frame:GetPushedTexture():SetVertexColor(0.05,0.05,0.05,1)
+            -- button.frame:GetHighlightTexture():SetVertexColor(1,1,1,0.1)
+            -- button.frame:GetDisabledTexture():SetVertexColor(0.2,0.2,0.2,0.5)
 
             button:SetCallback("OnClick", function(button)
                 widget:Fire("OnComponentSelected", frameDescriptor)
-                button:SetDisabled(true)
+                button:Disable()
                 if inspector.selected then
-                    inspector.selected:SetDisabled(false)
+                    inspector.selected.button:Enable()
                 end
-                inspector.selected = button
+                inspector.selected = { button = button, frameDescriptor = frameDescriptor }
             end)
 
             if first then
                 widget:Fire("OnComponentSelected", frameDescriptor)
-                inspector.selected = button
-                button:SetDisabled(true)
+                inspector.selected = { button = button, frameDescriptor = frameDescriptor }
+                button:Disable()
                 first = false
             end
 
             self:AddChild(button)
         end
+
+        local addComponent = AceGUI:Create("InspectorButton")
+        addComponent:SetText("Add Component")
+        addComponent:SetFullWidth(true)
+        addComponent:SetCallback("OnClick", function(button)
+            widget:Fire("OnAddComponent")
+        end)
+        addComponent:SetBaseColor(0.1, 0.6, 0.1, 0.5)
+        addComponent:SetHoverColor(0.05, 0.6, 0.05, 1)
+        self:AddChild(addComponent)
     end
 
     widget.componentList = inspector
@@ -161,13 +172,7 @@ local function Constructor()
             widget.node.rootFrame:SetScale(scale)
         end
     end
-    -- widget:SetNodes(nodeDefinitions)
-    -- widget:SelectNode(nodeId)
-    -- widget:SetEditMode(enabled)
-    -- widget:SetPreviewContext(context)
-    -- widget:Clear()
 
-    -- widget:Fire("OnFrameSelected", frame)
     -- widget:Fire("OnNodeMoved", node)
     
 

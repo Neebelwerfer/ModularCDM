@@ -2,4 +2,5 @@
     <Script file="PreviewDataProvider.lua"/>
     <Script file="PreviewNode.lua"/>
     <Script file="PreviewCanvasWidget.lua"/>
+    <Script file="InspectorButton.lua"/>
 </Ui>
